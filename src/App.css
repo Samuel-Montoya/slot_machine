@@ -1,0 +1,81 @@
+.reels_wrapper {
+    display: flex;
+}
+
+.reel_container {
+    width: 100px;
+    height: 300px; /* exactly 3 symbols * 100px */
+    overflow: hidden;
+    border: 2px solid #333;
+    background: #000;
+    border-radius: 8px;
+    position: relative;
+    perspective: 700px; /* still gives depth illusion */
+    box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.8);
+}
+
+/* keep the curved illusion but reduce distortion */
+.reel_inner {
+    height: 100%; /* ensures proper clipping */
+    transform: rotateX(5deg); /* smaller angle */
+    transform-origin: center center;
+}
+
+/* reel_strip still moves vertically */
+.reel_strip {
+    display: flex;
+    flex-direction: column;
+    will-change: transform;
+    transform-style: flat;
+}
+
+/* shadow masks to hide extra edges */
+.reel_container::before,
+.reel_container::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 25%;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.reel_container::before {
+    top: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent);
+}
+
+.reel_container::after {
+    bottom: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+}
+
+.symbol.blank {
+    background: radial-gradient(circle, #111 30%, #000 100%);
+}
+.symbol {
+    width: 100%;
+    height: 100px;
+    object-fit: contain;
+    transition: all 0.2s ease;
+}
+
+.symbol.highlighted {
+    box-shadow: 0 0 10px 3px yellow;
+    transform: scale(1.05);
+    z-index: 1;
+}
+
+@keyframes spinLoop {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-50%);
+    }
+}
+
+/*.reel_strip.spinning {*/
+/*    animation: spinLoop 1s linear infinite;*/
+/*}*/

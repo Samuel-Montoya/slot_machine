@@ -1,0 +1,71 @@
+{
+  "meta": {
+    "currency": "USD",
+    "creditValue": 1,
+    "lines": 9,
+    "betPerLine": 1
+  },
+  "rules": {
+    "bonusTriggersNoLineWins": true,
+    "wildSubstitutesExceptBonus": true,
+    "highestApplicablePerLine": true,
+    "sumAcrossLines": true
+  },
+  "payouts": [
+    {
+      "id": "three_wilds",
+      "description": "Three Wilds on a payline",
+      "condition": { "symbols": ["Wild","Wild","Wild"] },
+      "credits": 1000
+    },
+    {
+      "id": "bonus_trigger",
+      "description": "Three Bonus symbols on a payline → Activate Bonus Game (no line wins)",
+      "condition": { "symbols": ["Bonus","Bonus","Bonus"] },
+      "credits": 0,
+      "special": "activate_bonus_and_nullify_line_wins"
+    },
+    {
+      "id": "three_sevens",
+      "description": "Three Sevens on a payline",
+      "condition": { "symbols": ["Seven","Seven","Seven"] },
+      "credits": 60
+    },
+    {
+      "id": "three_triple_bars",
+      "description": "Three Triple Bars on a payline",
+      "condition": { "symbols": ["TripleBar","TripleBar","TripleBar"] },
+      "credits": 40
+    },
+    {
+      "id": "three_double_bars",
+      "description": "Three Double Bars on a payline",
+      "condition": { "symbols": ["DoubleBar","DoubleBar","DoubleBar"] },
+      "credits": 20
+    },
+    {
+      "id": "three_single_bars",
+      "description": "Three Single Bars on a payline",
+      "condition": { "symbols": ["SingleBar","SingleBar","SingleBar"] },
+      "credits": 10
+    },
+    {
+      "id": "three_mixed_bars",
+      "description": "Any 3 mixed Bars on a payline (any combination of Single/Double/Triple bars, not all identical)",
+      "condition": { "symbolsAnyOf": ["SingleBar","DoubleBar","TripleBar"], "requireAllBars": true, "excludeAllSame": true },
+      "credits": 5
+    },
+    {
+      "id": "two_cherries",
+      "description": "Any 2 Cherries on a payline (two cherries, third anything)",
+      "condition": { "count": { "symbol": "Cherry", "equals": 2 } },
+      "credits": 5
+    },
+    {
+      "id": "one_cherry",
+      "description": "Any 1 Cherry on a payline (one cherry, other two anything)",
+      "condition": { "count": { "symbol": "Cherry", "equals": 1 } },
+      "credits": 2
+    }
+  ]
+}
