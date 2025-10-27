@@ -1,94 +1,98 @@
-// evaluateAllLines.js
-import evaluateLine from "./evaluateLine.js";
-import { getLineSymbols } from "./getLineSymbols.js";
-import { paylines } from "./paylines.js";
+import evaluateLine from "./evaluateLine.js"
+import { getLineSymbols } from "./getLineSymbols.js"
+import { paylines } from "./paylines.js"
+import paytableData from "../paytable.json"
 
-const log = (results, bonusTriggered, totalCredits) => {
-    console.log("\nLine Results:");
-    results.forEach(r => {
-        console.log(
-            `Line ${r.line}: ${r.symbols.join(" | ")} → ${
-                r.win ? `${r.credits} credits (${r.id})` : "No Win"
-            }`
-        );
-    });
-
-    if (bonusTriggered) {
-        console.log("\n*** BONUS GAME TRIGGERED ***");
-    } else {
-        console.log(`\nTotal Credits Won: ${totalCredits}`);
-    }
-};
+const paytable = paytableData.payouts
 
 export default function evaluateAllLines(window, shouldLog = false) {
-    const lines = getLineSymbols(window);
-    const results = [];
-    let totalCredits = 0;
-    let bonusTriggered = false;
+  const lines = getLineSymbols(window)
+  const results = []
+  let totalCredits = 0
+  let bonusTriggered = false
 
-    // ✅ Evaluate all paylines
-    for (let i = 0; i < lines.length; i++) {
-        const res = evaluateLine(lines[i]);
-        results.push({
-            line: i + 1,
-            symbols: lines[i],
-            positions: paylines[i], // [row per reel]
-            ...res
-        });
+  // Evaluate all paylines normally
+  for (let i = 0; i < lines.length; i++) {
+    const res = evaluateLine(lines[i])
+    results.push({
+      line: i + 1,
+      symbols: lines[i],
+      positions: paylines[i], // position indexes for highlight
+      ...res
+    })
 
-        if (res.bonus) bonusTriggered = true;
-        totalCredits += res.credits;
+    if (res.bonus) bonusTriggered = true
+    totalCredits += res.credits
+  }
+
+  // If bonus triggered → ignore line wins
+  if (bonusTriggered) totalCredits = 0
+
+  // 🍒 GLOBAL CHERRY HANDLING
+  const allSymbols = Object.values(window).flat()
+  const cherryCount = allSymbols.filter((s) => s === "Cherry").length
+
+  let cherryCredits = 0
+  const cherryRules = paytable.filter((p) => p.condition?.count?.symbol === "Cherry")
+
+  for (const rule of cherryRules) {
+    if (cherryCount === rule.condition.count.equals) {
+      cherryCredits = rule.credits
     }
+  }
 
-    // ✅ If bonus triggered, ignore all normal line wins
-    if (bonusTriggered) totalCredits = 0;
+  // ✅ If we have cherries, find their positions and make them part of the results
+  if (cherryCount > 0 && !bonusTriggered && cherryCredits > 0) {
+    totalCredits += cherryCredits
 
-    // ✅ Global Cherry payout (based on the full visible window)
-    const allSymbols = Object.values(window).flat();
-    const cherryCount = allSymbols.filter(s => s === "Cherry").length;
-
-    if (cherryCount > 0) {
-        let cherryCredits = 0;
-        if (cherryCount === 1) cherryCredits = 2;
-        else if (cherryCount === 2) cherryCredits = 5;
-        else if (cherryCount >= 3) cherryCredits = 10;
-
-        if (!bonusTriggered) {
-            totalCredits += cherryCredits;
-            results.push({
-                line: null,
-                symbols: [],
-                positions: [],
-                win: true,
-                bonus: false,
-                credits: cherryCredits,
-                id: `global_cherries_${cherryCount}`
-            });
+    // find exact positions of cherries for visual highlight
+    const cherryPositions = []
+    Object.keys(window).forEach((reelKey, reelIndex) => {
+      window[reelKey].forEach((symbol, rowIndex) => {
+        if (symbol === "Cherry") {
+          cherryPositions.push([reelIndex, rowIndex])
         }
-    }
+      })
+    })
 
-    const winningLines = results.filter(r => r.win && r.credits > 0);
+    results.push({
+      line: 0, // 0 = global cherry “line”
+      symbols: Array(cherryCount).fill("Cherry"),
+      positions: cherryPositions,
+      win: true,
+      bonus: false,
+      credits: cherryCredits,
+      id: `global_cherries_${cherryCount}`
+    })
+  }
 
-    if (shouldLog)
-        console.log("Total Credits:", totalCredits, "Bonus:", bonusTriggered, "Results:", results);
+  const winningLines = results.filter((r) => {
+    if (bonusTriggered) return false
+    return r.win && r.credits > 0
+  })
 
-    // ✅ Return results (preserving your original structure)
-    return {
-        totalCredits,
-        bonusTriggered,
-        results,
-        winningLines,
-        hasWins: winningLines.length > 0,
-        winningPositions: winningLines
-            .filter(line => line.positions && line.positions.length)
-            .map(line =>
-                line.positions.map((rowIndex, reelIndex) => ({
-                    reel: reelIndex,
-                    row: rowIndex,
-                    payline: line.line,      // line number
-                    credits: line.credits,   // payout
-                    id: line.id              // payout type
-                }))
-            )
-    };
+  if (shouldLog) {
+    console.log("Line Results:")
+    winningLines.forEach((r) => {
+      console.log(`Line ${r.line}: ${r.symbols.join(" | ")} → ${r.credits} credits (${r.id})`)
+    })
+    console.log(`Total Credits Won: ${totalCredits}`)
+  }
+
+  return {
+    totalCredits,
+    bonusTriggered,
+    results,
+    winningLines,
+    hasWins: winningLines.length > 0,
+    winningPositions: winningLines.flatMap((line) =>
+      line.positions.map((pos) => ({
+        reel: pos.reel,
+        row: pos.row,
+        payline: line.line,
+        credits: line.credits,
+        id: line.id
+      }))
+    )
+  }
 }
