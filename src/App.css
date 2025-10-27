@@ -1,17 +1,58 @@
+#root {
+    background-color: black;
+    width: 100vw;
+    height: 100vh;
+    font-family: "Press Start 2P", system-ui;
+}
+
+.slot_wrapper {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
 .reels_wrapper {
     display: flex;
 }
 
 .reel_container {
-    width: 100px;
+    width: 160px;
     height: 300px; /* exactly 3 symbols * 100px */
     overflow: hidden;
-    border: 2px solid #333;
-    background: #000;
+    background: white;
     border-radius: 8px;
     position: relative;
     perspective: 700px; /* still gives depth illusion */
-    box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.8);
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.9) 20%, rgba(255, 255, 255, 0.9) 20%, rgba(255, 255, 255, 0.6) 90%);
+    box-shadow:
+            inset 0 0 25px rgba(255, 255, 255, 0.9),
+            inset 0 0 50px rgba(255, 255, 255, 0.6),
+            inset 0 0 90px rgba(255, 255, 255, 0.4);
+    border: 5px solid #c0c0c0;
+    transition: all 1s ease;
+}
+
+.green_background {
+    background-color: green;
+    box-shadow: none;
+}
+
+.reel_lines {
+    width: 60px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.reel_lines hr {
+    width: 80%;
+    height: 5px;
+    border: none;
+    background-color: #c0c0c0;
 }
 
 /* keep the curved illusion but reduce distortion */
@@ -43,29 +84,25 @@
 
 .reel_container::before {
     top: 0;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent);
+    /*background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), transparent);*/
 }
 
 .reel_container::after {
     bottom: 0;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+    /*background: linear-gradient(to top, rgba(0, 0, 0, 0.1), transparent);*/
 }
 
 .symbol.blank {
-    background: radial-gradient(circle, #111 30%, #000 100%);
+    background: transparent;
 }
 .symbol {
     width: 100%;
     height: 100px;
     object-fit: contain;
-    transition: all 0.2s ease;
+    transition: all 0.1s ease;
+    border-radius: 10px;
 }
 
-.symbol.highlighted {
-    box-shadow: 0 0 10px 3px yellow;
-    transform: scale(1.05);
-    z-index: 1;
-}
 
 @keyframes spinLoop {
     0% {
@@ -76,6 +113,100 @@
     }
 }
 
-/*.reel_strip.spinning {*/
-/*    animation: spinLoop 1s linear infinite;*/
-/*}*/
+.info_wrapper {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.info_box {
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    margin: 20px;
+}
+
+.info_box h1 {
+    font-size: 0.6rem;
+    margin-bottom: 5px;
+}
+.larger > div {
+    width: 150px !important;
+}
+.info_box div {
+    font-size: 1.1rem;
+    border: 1px solid white;
+    border-radius: 5px;
+    padding: 10px;
+    color: red;
+    width: 30px;
+}
+
+.spin_button {
+    text-align: center;
+    border: 1px solid red;
+    border-radius: 5px;
+    color: white;
+    padding: 10px 20px;
+    cursor: pointer;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+    transition: 0.2s ease;
+}
+.spin_button:hover {
+    transform: scale(1.05);
+}
+.spin_button h1 {
+    font-size: 1.7rem;
+}
+.spin_button h2 {
+    margin-top: 5px;
+    font-size: 0.8rem;
+}
+
+.pay_lines {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin-right: 10px;
+    padding: 8px 0 8px 0;
+    box-sizing: border-box;
+}
+
+.pay_line:nth-child(even) {
+    /*margin: 10px 0 10px 0;*/
+}
+
+.pay_line section {
+    width: 30px;
+    display: flex;
+    /*margin-bottom: 10px;*/
+    justify-content: center;
+    align-items: center;
+}
+
+.pay_line section:nth-child(even) {
+    margin: 8px 0 8px 0;
+}
+
+.pay_line h1 {
+    height: 100%;
+    background-color: red;
+    padding: 2px;
+}
+
+.pay_line div {
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+
+    transform: rotate(180deg);
+}

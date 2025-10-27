@@ -1,18 +1,32 @@
-import React, { useRef, useState } from "react";
+import React, {useEffect, useRef, useState} from "react";
 import "./App.css";
+import 'animate.css'
 
-import shuffleArray from "./helpers/array.js";
 import getImage from "./helpers/images.js";
 import evaluateAllLines from "./helpers/evaluateAllLines.js";
 import spinReels from "./helpers/spin.js";
-import { reel1 as reelStrip1, reel2 as reelStrip2, reel3 as reelStrip3 } from "./helpers/reels.js";
-import { sound } from "./helpers/soundController.js";
-import { animateWin } from "./helpers/animateWin.js";
+import {reel1 as reelStrip1, reel2 as reelStrip2, reel3 as reelStrip3} from "./helpers/reels.js";
+import {randomizeSpinSound, sound} from "./helpers/soundController.js";
+import {animateWin} from "./helpers/animateWin.js";
+import shuffleArray from "./helpers/array.js";
 
 const SYMBOL_HEIGHT = 100;
 const VISIBLE_COUNT = 3;
-const pitches = [0.98, 0.99, 1, 1.01, 1.02];
 const BASE_SPIN_SPEED = 7000; // pixels per second — consistent spin speed
+
+export const formatCash = (cash) => cash.toFixed(2);
+
+export const colors = {
+    1: "#ff00004a",
+    2: "#6495ed85",
+    3: "#0080006b",
+    4: "#ff69b478",
+    5: "#0000ff73",
+    6: "#daa5206e",
+    7: "#80008052",
+    8: "#ffa5004d",
+    9: "#3cb37175"
+};
 
 
 export default function App() {
@@ -20,21 +34,25 @@ export default function App() {
     const [winAmount, setWinAmount] = useState(0);
     const [spinning, setSpinning] = useState(false);
     const [reels, setReels] = useState([reelStrip1, reelStrip2, reelStrip3]);
+    const [paylines, setPaylines] = useState([])
+    const [payPositions, setPayPositions] = useState([])
 
     const reelRefs = [useRef(null), useRef(null), useRef(null)];
     const currentOutcomeRef = useRef(null);
     const winAnimationRef = useRef(null);
-    const lastWinRef = useRef({ oldMoney: 0, winnings: 0 });
+    const lastWinRef = useRef({oldMoney: 0, winnings: 0});
 
     const rafRefs = useRef([null, null, null]);
     const stopTimeouts = useRef([]);
+
+    const [showGreen, setShowGreen] = useState(false)
 
     function clearScheduledStops() {
         stopTimeouts.current.forEach((t) => t && clearTimeout(t));
         stopTimeouts.current = [];
     }
 
-    function cancelAllRafs() {
+    function cancelAllRefs() {
         rafRefs.current.forEach((id, i) => {
             if (id) {
                 cancelAnimationFrame(id);
@@ -95,18 +113,18 @@ export default function App() {
         forceStopToResult(index, reelArray);
     };
 
-    /** Shared payout handler */
     function handlePayout(final, oldMoney) {
         const winnings = final.totalCredits;
         if (winnings <= 0) return;
 
         const winTrack = sound("counting");
+        winTrack.play()
 
         const newMoney = oldMoney + winnings;
-        lastWinRef.current = { oldMoney, winnings };
+        lastWinRef.current = {oldMoney, winnings};
 
         // Keep both controllers in one object so they can be canceled together
-        const payoutController = { cancelled: false };
+        const payoutController = {cancelled: false};
 
         const animWinnings = animateWin({
             from: 0,
@@ -130,7 +148,7 @@ export default function App() {
                 setMoney(newMoney);
                 setWinAmount(winnings);
                 winTrack.stop();
-                sound("finished_counting")
+                sound("finished_counting").play()
                 winAnimationRef.current = null;
             },
         });
@@ -142,7 +160,7 @@ export default function App() {
             setMoney(newMoney);
             setWinAmount(winnings);
             winTrack.stop();
-            sound("finished_counting")
+            sound("finished_counting").play()
             winAnimationRef.current = null;
         };
 
@@ -159,13 +177,20 @@ export default function App() {
 
         // --- FAST SKIP SPIN MODE ---
         if (spinning) {
+            sound("spin").stop()
+            sound("tone").stop()
             clearScheduledStops();
-            cancelAllRafs();
+            cancelAllRefs();
 
             const outcomeData = currentOutcomeRef.current;
             if (!outcomeData) {
                 setSpinning(false);
                 return;
+            }
+            if (outcomeData.window.reel3.includes("Bonus")) {
+                sound("bonus3").play()
+            } else {
+                sound("hit3").play()
             }
 
             const instantReels = [
@@ -176,9 +201,6 @@ export default function App() {
             setReels(instantReels);
             for (let i = 0; i < 3; i++) forceStopToResult(i, instantReels[i]);
 
-            sound("spin").stop();
-            sound("hit")
-
             const final = evaluateAllLines(outcomeData.window);
             if (!winAnimationRef.current) handlePayout(final, money - 9);
 
@@ -187,8 +209,14 @@ export default function App() {
         }
 
         // --- NORMAL SPIN MODE ---
+        setPayPositions([])
+        setPaylines([])
+        setShowGreen(false)
         setWinAmount(0);
-        sound("spin")
+        sound("click").play()
+        randomizeSpinSound();
+        sound("spin").play()
+        sound("tone").play()
         setSpinning(true);
         setMoney((m) => m - 9);
         resetReelsPosition();
@@ -197,16 +225,14 @@ export default function App() {
         currentOutcomeRef.current = outcomeData;
 
         const final = evaluateAllLines(outcomeData.window, true);
-        if (final.results.some((r) => r.bonus)) sound("bonus")
-
+        setPaylines(final.winningLines)
+        setPayPositions(final.winningPositions)
         const newReels = [
             [...reelStrip1, ...outcomeData.window.reel1],
             [...reelStrip2, ...outcomeData.window.reel2],
             [...reelStrip3, ...outcomeData.window.reel3],
         ];
         setReels(newReels);
-
-        const sortedPitches = shuffleArray(pitches);
 
         // Check for suspense spin
         const suspenseSpin =
@@ -224,29 +250,43 @@ export default function App() {
             }
         });
 
+        // 🧠 Suspense logic: reel 3 spins longer if first 2 reels have Bonus
+        const reel3StopTime = suspenseSpin ? 3500 : 2000;
+
+        const anticipation = sound("anticipation")
+
 // Timed stops
         const t0 = setTimeout(() => {
             stopReel(0, newReels[0]);
-            if (outcomeData.window.reel1.includes("Bonus")) sound("bonus1")
-            else sound("hit", { rate: sortedPitches[0] });
+            if (outcomeData.window.reel1.includes("Bonus")) sound("bonus1").play()
+            else sound("hit1").play();
         }, 1000);
 
         const t1 = setTimeout(() => {
             stopReel(1, newReels[1]);
-            if (outcomeData.window.reel2.includes("Bonus")) sound("bonus2")
-            else sound("hit", { rate: sortedPitches[1] });
+            if (outcomeData.window.reel2.includes("Bonus")) {
+                sound("bonus2").play()
+            } else sound("hit2").play();
+
+            if (suspenseSpin) {
+                anticipation.play()
+                setShowGreen(true)
+            }
         }, 1500);
 
-        // 🧠 Suspense logic: reel 3 spins longer if first 2 reels have Bonus
-        const reel3StopTime = suspenseSpin ? 3000 : 2000;
 
         const t2 = setTimeout(() => {
             stopReel(2, newReels[2]);
             if (outcomeData.window.reel3.includes("Bonus")) {
-                sound("bonus3", { rate: 1.1 });
+                sound("bonus3").play()
+                if (!final.bonusTriggered) setShowGreen(false)
+                else sound("bell").play()
             } else {
-                sound("hit", { rate: sortedPitches[1] });
+                sound("hit3").play()
+                setShowGreen(false)
             }
+
+            if (suspenseSpin) anticipation.stop()
 
             // 👇 Small delay before showing win animation
             const postSpinDelay = 400; // milliseconds — adjust as you like
@@ -257,43 +297,160 @@ export default function App() {
             }, postSpinDelay);
         }, reel3StopTime);
 
-
         stopTimeouts.current = [t0, t1, t2];
     }
 
+    useEffect(() => {
+        if (!payPositions.length || spinning) return;
+
+        let current = 0;
+        let highlightInterval;
+
+        const highlightLine = (positions) => {
+            // 🧹 clear previous highlights
+            document.querySelectorAll(".symbol").forEach(el => {
+                if (el) {
+                    el.classList.remove("animate__animated", "animate__pulse", "animate__infinite")
+                    el.style.backgroundColor = "transparent"
+                }
+            });
+            // 🎯 highlight symbols for this line
+            positions.forEach(pos => {
+                const el = document.getElementById(`reel_${pos.reel}_pos_${pos.row[1] + 49}`);
+                if (el) {
+                    el.classList.add("animate__animated", "animate__pulse", "animate__infinite")
+                    el.style.backgroundColor = colors[pos.payline]
+
+                }
+                setPaylines([{line: pos.payline, text: `Line ${pos.payline} - ${pos.id.split('_').join(' ')} pays ${pos.credits} credits`}])
+            });
+        };
+
+        // start cycling
+        highlightLine(payPositions[current]);
+
+        highlightInterval = setInterval(() => {
+            current = (current + 1) % payPositions.length; // 🔁 loop forever
+            highlightLine(payPositions[current]);
+        }, 1000); // 1 second per line
+
+        // 🧼 cleanup when spinning again
+        return () => {
+            clearInterval(highlightInterval);
+            document.querySelectorAll(".symbol").forEach(el => {
+                if (el) {
+                    el.classList.remove("animate__animated", "animate__pulse", "animate__infinite")
+                    el.style.backgroundColor = "transparent"
+                }
+            });
+        };
+    }, [payPositions, spinning]);
+
     // --- UI ---
     return (
-        <div style={{ padding: 20 }}>
-            <button disabled={false} onClick={handleClick}>
-                {spinning ? "SPIN / TAP TO SKIP" : "SPIN"}
-            </button>
-
-            <div className="reels_wrapper" style={{ marginTop: 20 }}>
+        <div className="slot_wrapper">
+            <div className="reels_wrapper" style={{marginTop: 20}}>
+                <section className="pay_lines">
+                    <div className="pay_line">
+                        <section className={!spinning && paylines.find(p => p.line === 4) ? 'animate__animated animate__flash animate__infinite' : ''}>
+                            <h1 style={{backgroundColor: 'hotpink'}}>4</h1>
+                            <div style={{borderRight: "10px solid hotpink"}}/>
+                        </section>
+                        <section className={!spinning && paylines.find(p => p.line === 2) ? 'animate__animated animate__flash animate__infinite' : ''}>
+                            <h1 style={{backgroundColor: 'cornflowerblue'}}>2</h1>
+                            <div style={{borderRight: "10px solid cornflowerblue"}}/>
+                        </section>
+                        <section className={!spinning && paylines.find(p => p.line === 9) ? 'animate__animated animate__flash animate__infinite' : ''}>
+                            <h1 style={{backgroundColor: 'mediumseagreen'}}>9</h1>
+                            <div style={{borderRight: "10px solid mediumseagreen"}}/>
+                        </section>
+                    </div>
+                    <div className="pay_line">
+                        <section className={!spinning && paylines.find(p => p.line === 6) ? 'animate__animated animate__flash animate__infinite' : ''}>
+                            <h1 style={{backgroundColor: 'goldenrod'}}>6</h1>
+                            <div style={{borderRight: "10px solid goldenrod"}}/>
+                        </section>
+                        <section className={!spinning && paylines.find(p => p.line === 1) ? 'animate__animated animate__flash animate__infinite' : ''}>
+                            <h1 style={{backgroundColor: 'red'}}>1</h1>
+                            <div style={{borderRight: "10px solid red"}}/>
+                        </section>
+                        <section className={!spinning && paylines.find(p => p.line === 7) ? 'animate__animated animate__flash animate__infinite' : ''}>
+                            <h1 style={{backgroundColor: 'purple'}}>7</h1>
+                            <div style={{borderRight: "10px solid purple"}}/>
+                        </section>
+                    </div>
+                    <div className="pay_line">
+                        <section className={!spinning && paylines.find(p => p.line === 8) ? 'animate__animated animate__flash animate__infinite' : ''}>
+                            <h1 style={{backgroundColor: 'orange'}}>8</h1>
+                            <div style={{borderRight: "10px solid orange"}}/>
+                        </section>
+                        <section className={!spinning && paylines.find(p => p.line === 3) ? 'animate__animated animate__flash animate__infinite' : ''}>
+                            <h1 style={{backgroundColor: 'green'}}>3</h1>
+                            <div style={{borderRight: "10px solid green"}}/>
+                        </section>
+                        <section className={!spinning && paylines.find(p => p.line === 5) ? 'animate__animated animate__flash animate__infinite' : ''}>
+                            <h1 style={{backgroundColor: 'blue'}}>5</h1>
+                            <div style={{borderRight: "10px solid blue"}}/>
+                        </section>
+                    </div>
+                </section>
                 {reels.map((reel, i) => (
-                    <Reel key={i} ref={reelRefs[i]} reel={reel} />
+                    <React.Fragment key={i}>
+                        <Reel key={i} ref={reelRefs[i]} reel={reel} showGreen={showGreen} reelIndex={i}/>
+                        {i < 2 && (
+                            <section className="reel_lines">
+                                <hr/>
+                                <hr/>
+                                <hr/>
+                            </section>
+                        )}
+                    </React.Fragment>
                 ))}
             </div>
 
-            <div className="money-display">
-                <div className="stat">
-                    <span className="label">CREDITS</span>
-                    <span className="value">${money}</span>
-                </div>
-                <div className="stat">
-                    <span className="label">WIN</span>
-                    <span className="value win">${winAmount}</span>
-                </div>
+            <div className="info_wrapper">
+                <section className="info_box">
+                    <h1>LINES</h1>
+                    <div>9</div>
+                </section>
+
+                <section className="info_box larger">
+                <h1>CASH</h1>
+                    <div>${formatCash(money)}</div>
+                </section>
+
+                <section className="spin_button" onClick={handleClick}>
+                    <h1>$1</h1>
+                    <h2>SPIN</h2>
+                </section>
+
+                <section className="info_box larger">
+                    <h1>WIN</h1>
+                    <div>
+                        $
+                        {!spinning
+                            ? formatCash(winAmount)
+                            : "0.00"}
+                    </div>
+                </section>
+
+                <section className="info_box">
+                    <h1>BET</h1>
+                    <div>9</div>
+                </section>
             </div>
+             <h1 style={{fontFamily: 'sans-serif', marginTop: 5, visibility: paylines.length !== 0 ? 'visible' : 'hidden', height: 10, fontSize: '0.6rem', color: colors[paylines[0]?.line]}}>{paylines[0]?.text}</h1>
+
         </div>
     );
 }
 
-const Reel = React.forwardRef(({ reel, spinning }, ref) => {
+const Reel = React.forwardRef(({reel, spinning, showGreen, reelIndex}, ref) => {
     // Duplicate symbols twice for seamless loop
     const doubledReel = [...reel, ...reel, ...reel, ...reel, ...reel];
 
     return (
-        <div className="reel_container">
+        <div className={`reel_container ${showGreen ? 'green_background' : ''}`}>
             <div className="reel_inner">
                 <div
                     ref={ref}
@@ -301,9 +458,9 @@ const Reel = React.forwardRef(({ reel, spinning }, ref) => {
                 >
                     {doubledReel.map((symbol, i) =>
                         symbol === "Blank" ? (
-                            <div key={i} className="symbol blank" />
+                            <div key={i} className="symbol blank"/>
                         ) : (
-                            <img key={i} src={getImage(symbol)} className="symbol" alt={symbol} />
+                            <img key={i} src={getImage(symbol)} className="symbol" alt={symbol} id={`reel_${reelIndex}_pos_${i}`}/>
                         )
                     )}
                 </div>

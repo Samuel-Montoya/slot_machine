@@ -10,10 +10,10 @@ export function animateWin({ from = 0, to = 0, onUpdate, onComplete }) {
     }
 
     // adjust interval speed based on total diff
-    let interval = 100;
+    let interval = 90;
     // if (diff > 20) interval = 100;
-    if (diff > 100) interval = 50;
-    if (diff > 500) interval = 25;
+    // if (diff > 100) interval = 50;
+    // if (diff > 500) interval = 25;
 
     let current = from;
     let intervalId = null;
