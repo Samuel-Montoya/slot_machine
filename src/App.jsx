@@ -21,7 +21,7 @@ export default function App() {
   const [reels, setReels] = useState([reelStrip1, reelStrip2, reelStrip3])
   const [paylines, setPaylines] = useState([])
   const [showGreen, setShowGreen] = useState(false)
-  const [bonus, setBonus] = useState(true)
+  const [bonus, setBonus] = useState(false)
 
   const reelRefs = [useRef(null), useRef(null), useRef(null)]
   const currentOutcomeRef = useRef(null)
@@ -136,6 +136,11 @@ export default function App() {
 
         const soundToPlay = outcomeData.window.reel3.includes("Bonus") ? "bonus3" : "hit3"
         sound(soundToPlay).play()
+        if (final.bonusTriggered) {
+          setShowGreen(true)
+          sound("bell").play()
+          setTimeout(() => setBonus(true), 2000)
+        }
 
         setReels(reels)
         for (let i = 0; i < 3; i++) forceStopToResult(i, reels[i])
@@ -186,11 +191,15 @@ export default function App() {
 
         if (suspenseSpin) anticipation.stop()
 
-        setTimeout(() => {
-          setSpinning(false)
-          currentOutcomeRef.current = null
-          resolve(final.totalCredits)
-        }, 200)
+        setTimeout(
+          () => {
+            if (final.bonusTriggered) setBonus(true)
+            setSpinning(false)
+            currentOutcomeRef.current = null
+            resolve(final.totalCredits)
+          },
+          final.bonusTriggered ? 2000 : 200
+        )
       }, reel3StopTime)
 
       stopTimeouts.current = [t0, t1, t2]

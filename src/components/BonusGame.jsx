@@ -2,6 +2,7 @@ import "../Bonus.css"
 import { useEffect, useState } from "react"
 import Cash from "../assets/cash.png"
 import shuffleArray from "../helpers/array.js"
+import { sound } from "../helpers/soundController.js"
 
 const colors = {
   10: "hotpink",
@@ -22,6 +23,9 @@ export default function BonusGame() {
   const [moneyToHighlight, setMoneyToHighlight] = useState([])
 
   const initialLoad = async () => {
+    await waitASec(500)
+    sound("bonus_music").play()
+
     const step1 = ["left-20", "middle-30", "middle-50", "right-20"]
     const step2 = [...step1, "left-15", "middle-200", , "right-15"]
     const step3 = [...step2, "left-10", "right-10"]
@@ -38,6 +42,7 @@ export default function BonusGame() {
   }, [])
 
   const startGame = () => {
+    sound("bonus_music").volume(0.1)
     setInterval(() => {
       const shuffledMoney = shuffleArray(allMoney)
       setMoneyToHighlight(shuffledMoney.slice(0, 3))
@@ -45,7 +50,7 @@ export default function BonusGame() {
   }
 
   return (
-    <div className="bonus_game_wrapper">
+    <div className="bonus_game_wrapper animate__animated animate__fadeInDown">
       <div className="bonus_game_container">
         <h1>MONEY MAKER</h1>
 
