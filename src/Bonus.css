@@ -1,0 +1,138 @@
+.bonus_game_container {
+    width: 80%;
+    height: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at center, rgba(41, 4, 42, 0.95) 20%, rgba(60, 0, 120, 0.8) 60%, rgba(128, 0, 255, 0.8) 100%);
+    border-radius: 20px;
+    box-shadow: 0 0 30px rgba(128, 0, 255, 0.7);
+    animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+.bonus_game_wrapper {
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    position: absolute;
+    top:0;
+    left: 0;
+    z-index: 100;
+    font-family: "Gravitas One", serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        box-shadow: 0 0 30px rgba(128, 0, 255, 0.6);
+    }
+    50% {
+        box-shadow: 0 0 50px rgba(128, 0, 255, 0.9);
+    }
+}
+
+.bonus_game_content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.bonus_game-multipliers {
+    display: flex;
+    justify-content: space-between;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.bonus_game-money {
+    display: flex;
+}
+
+.bonus_game-money-item {
+    position: relative;
+    width: 150px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 6px;
+}
+
+.bonus_game-money-item.larger {
+    width: 220px;
+    height: 110px;
+    margin: 5px;
+}
+
+.bonus_game-money-item.larger h1 {
+    font-size: 2.6rem;
+}
+
+.bonus_game-money-item.medium h1 {
+    font-size: 2.3rem;
+}
+
+.bonus_game-money-item.medium {
+    width: 200px;
+    height: 100px;
+    margin: 5px;
+}
+
+.bonus_game-money-item img {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.4));
+    transition: filter 0.3s ease;
+}
+
+.bonus_game-money-item h1 {
+font-size: 1.1rem;
+    z-index: 101;
+}
+
+.bonus_game-middle-bottom {
+    display: flex;
+}
+
+.bonus_game_content h1 {
+    font-size: 1.5rem;
+    margin: 10px;
+    -webkit-text-stroke: 1px white; /* width and color */
+    text-stroke: 1px white; /* not supported in all browsers */
+    text-shadow:
+            -1px -1px 0 black,
+            1px -1px 0 black,
+            -1px  1px 0 black,
+            1px  1px 0 black;
+}
+
+.bonus_game-left h1, .bonus_game-right h1 {
+}
+
+.bonus_game-buttons {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.bonus_game_wrapper {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+    transition: 0.2s ease;
+}

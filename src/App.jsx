@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from "react"
 import "./App.css"
 import "animate.css"
+import BonusGame from "./components/BonusGame.jsx"
 
 import Paylines from "./components/Paylines.jsx"
 import Reels from "./components/Reels.jsx"
@@ -20,6 +21,7 @@ export default function App() {
   const [reels, setReels] = useState([reelStrip1, reelStrip2, reelStrip3])
   const [paylines, setPaylines] = useState([])
   const [showGreen, setShowGreen] = useState(false)
+  const [bonus, setBonus] = useState(true)
 
   const reelRefs = [useRef(null), useRef(null), useRef(null)]
   const currentOutcomeRef = useRef(null)
@@ -203,6 +205,7 @@ export default function App() {
         <Reels reels={reels} reelRefs={reelRefs} showGreen={showGreen} spinning={spinning} />
       </div>
       <UI handleClick={handleClick} spinning={spinning} paylines={paylines} />
+      {bonus && <BonusGame />}
     </div>
   )
 }
