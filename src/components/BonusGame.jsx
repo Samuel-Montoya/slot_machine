@@ -97,8 +97,8 @@ export default function BonusGame() {
 const Money = ({ amount, size = "small", moneyToHighlight, id }) => {
   const color = colors[amount]
   return (
-    <div className={`bonus_game-money-item ${size}`} style={{ filter: moneyToHighlight.includes(id) ? `drop-shadow(0 0 15px ${color})` : "inherit" }}>
-      <h1 style={{ color }}>{amount}</h1>
+    <div className={`bonus_game-money-item ${size}`}>
+      <h1 style={{ color, filter: moneyToHighlight.includes(id) ? `drop-shadow(0 0 15px ${color})` : "inherit" }}>{amount}</h1>
       <img src={Cash} alt="alt" />
     </div>
   )
