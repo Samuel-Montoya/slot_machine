@@ -10,6 +10,7 @@ export default function evaluateAllLines(window, shouldLog = false) {
   const results = []
   let totalCredits = 0
   let bonusTriggered = false
+  let isJackpot = false
 
   // Evaluate all paylines normally
   for (let i = 0; i < lines.length; i++) {
@@ -22,6 +23,7 @@ export default function evaluateAllLines(window, shouldLog = false) {
     })
 
     if (res.bonus) bonusTriggered = true
+    if (res.id === "three_wilds") isJackpot = true
     totalCredits += res.credits
   }
 
@@ -67,9 +69,14 @@ export default function evaluateAllLines(window, shouldLog = false) {
   }
 
   const winningLines = results.filter((r) => {
+    if (isJackpot) {
+      return r.id === "three_wilds"
+    }
     if (bonusTriggered) return false
     return r.win && r.credits > 0
   })
+
+  if (isJackpot) totalCredits = paytable.find((p) => p.id === "three_wilds").credits
 
   if (shouldLog) {
     console.log("Line Results:")

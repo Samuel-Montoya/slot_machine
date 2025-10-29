@@ -7,9 +7,10 @@ const playStopSounds = () => {
   sound("finished_counting").play()
 }
 
-const tickInterval = 90
+const tickInterval = 85
+const fastInterval = 37.5
 
-export default function UI({ handleClick, spinning, paylines }) {
+export default function UI({ handleClick, spinning }) {
   const [money, setMoney] = useState(100)
   const [wonCredits, setWonCredits] = useState(0)
   const [buttonLocked, setButtonLocked] = useState(false)
@@ -27,40 +28,67 @@ export default function UI({ handleClick, spinning, paylines }) {
     sound("counting").play()
     let countingCredits = 0
 
-    const tick = () => {
-      // Check if we are at the end of the count
-      if (countingCredits >= wonCredits) {
-        playStopSounds()
+    const clearTickInterval = () => {
+      if (tickIntervalRef.current) {
         clearInterval(tickIntervalRef.current)
         tickIntervalRef.current = null
-        return setWonCredits(wonCredits) // make sure it ends on the final value
+      }
+    }
+
+    const tick = () => {
+      // Stop when finished
+      if (countingCredits >= wonCredits) {
+        playStopSounds()
+        clearTickInterval()
+        return setWonCredits(wonCredits)
       }
 
       countingCredits += 1
       setWonCredits(countingCredits)
+
+      // When passing 200, switch to slower interval
+      if (countingCredits === 200) {
+        clearTickInterval()
+        tickIntervalRef.current = setInterval(tick, fastInterval)
+      }
     }
 
+    // Start counting
+    clearTickInterval()
     tickIntervalRef.current = setInterval(tick, tickInterval)
   }
 
   const handleMoneyCountUp = (wonCredits, prevMoney) => {
-    // Store this for later if user skips it
     finalMoneyRef.current = wonCredits
 
     let countingCredits = prevMoney
 
-    const tick = () => {
-      // Check if we are at the end of the count
-      if (countingCredits >= wonCredits) {
+    const clearMoneyInterval = () => {
+      if (moneyIntervalRef.current) {
         clearInterval(moneyIntervalRef.current)
         moneyIntervalRef.current = null
-        return setMoney(wonCredits) // make sure it ends on the final value
+      }
+    }
+
+    const tick = () => {
+      // Stop when done
+      if (countingCredits >= wonCredits) {
+        clearMoneyInterval()
+        return setMoney(wonCredits)
       }
 
       countingCredits += 1
       setMoney(countingCredits)
+
+      // Check if we crossed 200 and haven’t yet slowed down
+      if (countingCredits - prevMoney === 200) {
+        clearMoneyInterval()
+        moneyIntervalRef.current = setInterval(tick, fastInterval)
+      }
     }
 
+    // Start the initial interval
+    clearMoneyInterval()
     moneyIntervalRef.current = setInterval(tick, tickInterval)
   }
 
