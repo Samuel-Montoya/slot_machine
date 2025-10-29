@@ -27,7 +27,7 @@ export default function BonusGame() {
     sound("bonus_music").play()
 
     const step1 = ["left-20", "middle-30", "middle-50", "right-20"]
-    const step2 = [...step1, "left-15", "middle-200", , "right-15"]
+    const step2 = [...step1, "left-15", "middle-200", "right-15"]
     const step3 = [...step2, "left-10", "right-10"]
     const steps = [step1, step2, step3, allMoney]
 
@@ -97,8 +97,8 @@ export default function BonusGame() {
 const Money = ({ amount, size = "small", moneyToHighlight, id }) => {
   const color = colors[amount]
   return (
-    <div className={`bonus_game-money-item ${size}`}>
-      <h1 style={{ color, filter: moneyToHighlight.includes(id) ? `drop-shadow(0 0 15px ${color})` : "inherit" }}>{amount}</h1>
+    <div className={`bonus_game-money-item ${size}`} style={{filter: moneyToHighlight.includes(id) ? `drop-shadow(0 0 15px ${color})` : "inherit"}}>
+      <h1 style={{ color }}>{amount}</h1>
       <img src={Cash} alt="alt" />
     </div>
   )

@@ -118,7 +118,7 @@ const soundInstances = {
   click: new Howl({ src: [click], loop: false }),
   anticipation: new Howl({ src: [anticipation], loop: false }),
   counting: new Howl({ src: [counting], loop: true, volume: 0.9 }),
-  bonus_music: new Howl({ src: [bonusMusic], loop: true, volume: 0.3 }),
+  bonus_music: new Howl({ src: [bonusMusic], loop: true, volume: 0.2 }),
   finished_counting: new Howl({ src: [finished_counting], loop: false, volume: 0.4 }),
   bell: new Howl({ src: [bell], loop: false, volume: 0.4 })
 }
