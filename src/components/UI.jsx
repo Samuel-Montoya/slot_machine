@@ -10,7 +10,7 @@ const playStopSounds = () => {
 const tickInterval = 85
 const fastInterval = 37.5
 
-export default function UI({ handleClick, spinning }) {
+export default function UI({ handleClick, spinning, registerFunction }) {
   const [money, setMoney] = useState(100)
   const [wonCredits, setWonCredits] = useState(0)
   const [buttonLocked, setButtonLocked] = useState(false)
@@ -117,12 +117,17 @@ export default function UI({ handleClick, spinning }) {
 
     handleClick().then((wonCredits) => {
       if (wonCredits) {
-        handleWinCountUp(wonCredits)
-        const adjustedMoney = spinning ? money : newMoney
-        handleMoneyCountUp(adjustedMoney + wonCredits, money)
+        startCountUp(wonCredits)
       }
     })
   }
+
+  const startCountUp = (wonCredits) => {
+    handleWinCountUp(wonCredits)
+    const adjustedMoney = spinning ? money : money - 9
+    handleMoneyCountUp(adjustedMoney + wonCredits, money)
+  }
+  registerFunction(startCountUp)
 
   useEffect(() => {
     if (buttonLocked) setTimeout(() => setButtonLocked(false), 300)
@@ -132,7 +137,7 @@ export default function UI({ handleClick, spinning }) {
     <div className="info_wrapper animate__animated animate__zoomInDown animate__slower">
       <section className="info_box">
         <h1>LINES</h1>
-        <div>9</div>
+        <div style={{width: 40}}>9</div>
       </section>
 
       <section className="info_box larger">
@@ -152,7 +157,7 @@ export default function UI({ handleClick, spinning }) {
 
       <section className="info_box">
         <h1>BET</h1>
-        <div>9</div>
+        <div style={{width: 40}}>9</div>
       </section>
     </div>
   )

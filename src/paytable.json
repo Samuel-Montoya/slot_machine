@@ -35,13 +35,13 @@
       "id": "three_triple_bars",
       "description": "Three Triple Bars on a payline",
       "condition": { "symbols": ["TripleBar","TripleBar","TripleBar"] },
-      "credits": 20
+      "credits": 40
     },
     {
       "id": "three_double_bars",
       "description": "Three Double Bars on a payline",
       "condition": { "symbols": ["DoubleBar","DoubleBar","DoubleBar"] },
-      "credits": 15
+      "credits": 20
     },
     {
       "id": "three_single_bars",

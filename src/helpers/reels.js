@@ -1,40 +1,39 @@
+/**
+ *
+ * I think I figured out how to do lands in-between
+ * Add blanks to the reels
+ * Then, when rendering, make the blank spots render HALF the px
+ * Then, add the total amount of blank spots * the HALF px amount
+ * 10 blank spots in a reel = 300 / 2 so 150
+ * Although, now I think there should be a blank spot in-between EACH symbol
+ *
+ * Then, if any reel lands on a blank, would it count as win? Could blank spots still be counted if other symbols line up?
+ *
+ */
+
 const reel1 = [
-    "Cherry","SingleBar","DoubleBar","TripleBar","Cherry",
-    "SingleBar","DoubleBar","TripleBar","SingleBar","DoubleBar",
-    "Bonus","SingleBar","DoubleBar","TripleBar","Seven",
-    "SingleBar","DoubleBar","Wild","TripleBar","SingleBar",
-    "Seven","Bonus","TripleBar","DoubleBar","Bonus",
-    "DoubleBar","TripleBar","Seven","Wild","DoubleBar",
-    "SingleBar","Wild","TripleBar","DoubleBar","SingleBar",
-    "TripleBar","Seven","Seven","DoubleBar","SingleBar",
-    "Bonus","DoubleBar","TripleBar","Seven","Cherry",
-    "SingleBar","DoubleBar","TripleBar","Seven"
+    "TripleBar","Blank","Seven","Blank","TripleBar","Blank","Wild","Blank","Bonus","Blank",
+    "DoubleBar","Blank","DoubleBar","Blank","DoubleBar","Blank","Seven","Blank","SingleBar","Blank",
+    "Cherry","Blank","Bonus","Blank","DoubleBar","Blank","Seven","Blank","TripleBar","Blank",
+    "SingleBar","Blank","DoubleBar","Blank","Seven","Blank","Bonus","Blank","Cherry","Blank",
+    "Cherry","Blank","DoubleBar","Blank","TripleBar","Blank","SingleBar","Blank","SingleBar","Blank"
 ];
 
 const reel2 = [
-    "SingleBar","DoubleBar","TripleBar","Seven","SingleBar",
-    "DoubleBar","TripleBar","Bonus","DoubleBar","SingleBar",
-    "Seven","DoubleBar","TripleBar","SingleBar","DoubleBar",
-    "Seven","Bonus","DoubleBar","TripleBar","Wild",
-    "SingleBar","DoubleBar","TripleBar","Seven","SingleBar",
-    "DoubleBar","Bonus","TripleBar","DoubleBar","Bonus",
-    "SingleBar","DoubleBar","TripleBar","Seven","SingleBar",
-    "DoubleBar","TripleBar","Wild","SingleBar","Bonus",
-    "DoubleBar","TripleBar","Seven","SingleBar","DoubleBar",
-    "TripleBar","DoubleBar","Seven","Cherry"
+    "DoubleBar","Blank","Bonus","Blank","SingleBar","Blank","TripleBar","Blank","SingleBar","Blank",
+    "DoubleBar","Blank","Seven","Blank","TripleBar","Blank","TripleBar","Blank","Bonus","Blank",
+    "SingleBar","Blank","Seven","Blank","DoubleBar","Blank","TripleBar","Blank","Seven","Blank",
+    "TripleBar","Blank","Wild","Blank","SingleBar","Blank","DoubleBar","Blank","Bonus","Blank",
+    "SingleBar","Blank","SingleBar","Blank","TripleBar","Blank","Seven","Blank","DoubleBar","Blank"
 ];
 
 const reel3 = [
-    "SingleBar","Bonus","DoubleBar","Seven","TripleBar",
-    "SingleBar","DoubleBar","Bonus","TripleBar","Cherry",
-    "Bonus","DoubleBar","Seven","TripleBar","SingleBar",
-    "DoubleBar","TripleBar","Bonus","SingleBar","DoubleBar",
-    "Seven","Wild","TripleBar","SingleBar","DoubleBar",
-    "TripleBar","Seven","SingleBar","DoubleBar","TripleBar",
-    "Bonus","SingleBar","DoubleBar","Seven","TripleBar",
-    "Wild","SingleBar","DoubleBar","Bonus","Seven",
-    "SingleBar","Bonus","TripleBar","Seven","Cherry",
-    "SingleBar","DoubleBar","TripleBar","Seven"
+    "DoubleBar","Blank","Bonus","Blank","SingleBar","Blank","Wild","Blank","TripleBar","Blank",
+    "Seven","Blank","SingleBar","Blank","TripleBar","Blank","DoubleBar","Blank","Seven","Blank",
+    "Bonus","Blank","TripleBar","Blank","SingleBar","Blank","DoubleBar","Blank","TripleBar","Blank",
+    "Bonus","Blank","DoubleBar","Blank","TripleBar","Blank","Seven","Blank","DoubleBar","Blank",
+    "SingleBar","Blank","Seven","Blank","Bonus","Blank","Cherry","Blank","DoubleBar","Blank"
 ];
+
 
 export { reel1, reel2, reel3 };

@@ -2,7 +2,7 @@ import "../Bonus.css"
 import { useEffect, useState } from "react"
 import Cash from "../assets/cash.png"
 import shuffleArray from "../helpers/array.js"
-import { fadeOutSound, sound } from "../helpers/soundController.js"
+import {fadeInSound, fadeOutSound, sound} from "../helpers/soundController.js"
 import Logo from "../assets/logo.png"
 import { runBonus } from "../helpers/bonus/offers.js"
 
@@ -21,42 +21,47 @@ const waitASec = (ms = 800) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const allMoney = ["left-10", "left-15", "left-20", "middle-1000", "middle-200", "middle-30", "middle-50", "right-10", "right-15", "right-20"]
 
-export default function BonusGame() {
+export default function BonusGame({onFinish}) {
   const [moneyToHighlight, setMoneyToHighlight] = useState([])
   const [round, setRound] = useState(null)
   const [total, setTotal] = useState(0)
-  const offers = runBonus()
-  // console.log(offers)
+  const [offers, _] = useState(runBonus())
 
   useEffect(() => {
     if (round === null || !offers?.[round]) return
 
     let isCancelled = false
     let total = 0
+    console.log(offers)
+
 
     const revealPicks = async () => {
       const picks = offers[round].picks.map((p) => p.id)
       for (let i = 0; i < picks.length; i++) {
         if (isCancelled) break
-        total += offers[round].picks[i].value
+        console.log('here',offers[round].picks[i], total)
+        if(offers[round].picks[i].type === 'cash') total += offers[round].picks[i].value
+        else total *= offers[round].picks[i].value
         setTotal(total)
         setMoneyToHighlight(picks.slice(0, i + 1))
+        sound(`bonusHit${i + 1}`).play()
         await new Promise((res) => setTimeout(res, 1000))
       }
     }
 
     // Run once when `round` changes
-    revealPicks()
+    revealPicks().then(() => {
+      fadeInSound("bonus_music", 0.1, 1000)
+    })
 
     return () => {
       isCancelled = true
     }
-    // only rerun when round changes (NOT when offers re-renders)
   }, [round])
 
   const initialLoad = async () => {
     await waitASec(500)
-    sound("bonus_music").play()
+    sound("bonus_music", {volume: 0.1}).play()
 
     const step1 = ["left-20", "middle-30", "middle-50", "right-20"]
     const step2 = [...step1, "left-15", "middle-200", "right-15"]
@@ -64,7 +69,8 @@ export default function BonusGame() {
     const steps = [step1, step2, step3, allMoney]
 
     for (let i = 0; i < steps.length; i++) {
-      await waitASec(i === 0 ? 4000 : 1000)
+      await waitASec(i === 0 ? 2000 : 1000)
+      // sound(`bonusHit${i + 1}`).play()
       setMoneyToHighlight(steps[i])
     }
     await waitASec(3000)
@@ -76,19 +82,22 @@ export default function BonusGame() {
   }, [])
 
   const startGame = async () => {
-    // fadeOutSound("bonus_music", 1000)
-    // clearMoneyHighlight()
-    // await waitASec(2000)
-    // await randomOffers()
     clearMoneyHighlight()
-    // await waitASec(2000)
+    await waitASec(1000)
+    await randomOffers()
+    clearMoneyHighlight()
+    fadeOutSound("bonus_music", 1000)
+    sound('drumRoll').play()
+    await waitASec(3000)
     setRound(0)
   }
 
   const tryAgain = async () => {
+    fadeOutSound("bonus_music", 1000)
     clearMoneyHighlight()
     setTotal(0)
-    await waitASec(2000)
+    sound('drumRoll').play()
+    await waitASec(3000)
     setRound(round + 1)
   }
 
@@ -106,6 +115,11 @@ export default function BonusGame() {
   }
 
   const clearMoneyHighlight = () => setMoneyToHighlight([])
+
+  const takeMoney = () => {
+    fadeOutSound("bonus_music", 1000)
+    onFinish(total)
+  }
 
   return (
     <div className="bonus_game_wrapper animate__animated animate__fadeInDown">
@@ -149,7 +163,7 @@ export default function BonusGame() {
           </div>
           <div className="bonus_game-offer-buttons">
             <section>
-              <button style={{ backgroundColor: "mediumseagreen" }}>TAKE OFFER</button>
+              <button style={{ backgroundColor: "mediumseagreen" }} onClick={takeMoney}>TAKE OFFER</button>
             </section>
 
             <div>

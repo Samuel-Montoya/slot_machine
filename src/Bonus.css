@@ -1,12 +1,12 @@
 .bonus_game_container {
     /*width: 60%;*/
     width: 900px;
-    height: 95%;
+    height: 70%;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: radial-gradient(circle at center, rgba(41, 4, 42, 0.95) 20%, rgba(60, 0, 120, 0.8) 60%, #c902ff 100%);
+    background: radial-gradient(circle at center, rgba(41, 4, 42, 0.95) 20%, rgba(60, 0, 120, 0.8) 60%, purple 100%);
     border-radius: 20px;
     box-shadow: 0 0 30px rgba(128, 0, 255, 0.7);
     animation: pulseGlow 2.5s ease-in-out infinite;
@@ -246,14 +246,15 @@
 }
 
 .bonus_game-offer-buttons button {
+    color: white;
     width: 100%;
     font-size: 1.5rem;
     font-family: inherit;
     border-radius: 50px;
     padding: 10px 30px;
     border: 3px solid gold;
-    -webkit-text-stroke: 2px #ecc700; /* width + gold color */
-    text-stroke: 2px #ecc700; /* fallback */
+    -webkit-text-stroke: 1px #ecc700; /* width + gold color */
+    text-stroke: 1px #ecc700; /* fallback */
 }
 
 .gold-red-text {

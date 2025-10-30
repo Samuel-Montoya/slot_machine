@@ -36,8 +36,8 @@
 
 /* glossy white reels with subtle glow */
 .reel_container {
-    width: 160px;
-    height: 300px;
+    width: 320px;
+    height: 650px;
     overflow: hidden;
     border-radius: 8px;
     position: relative;
@@ -48,6 +48,14 @@
             inset 0 0 30px rgba(255, 255, 255, 0.7),
             inset 0 0 60px rgba(200, 200, 200, 0.4);
     transition: all 0.3s ease;
+}
+.symbol {
+    width: 100%;
+    height: 250px;
+    object-fit: contain;
+    transition: all 0.1s ease;
+    border-radius: 10px;
+    position: relative;
 }
 
 /* soft glow effect when active */
@@ -80,6 +88,10 @@
     display: flex;
     flex-direction: column;
     justify-content: space-around;
+    transform: perspective(800px) rotateX(12deg);
+    transform-origin: center center;
+    overflow: hidden;
+    position: relative;
 }
 
 .reel_lines hr {
@@ -90,11 +102,18 @@
 }
 
 /* keep the curved illusion but reduce distortion */
-.reel_inner {
-    height: 100%;
-    transform: rotateX(5deg);
-    transform-origin: center center;
+.reel_inner::before,
+.reel_inner::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 25%;
+    pointer-events: none;
+    z-index: 2;
 }
+
+
 
 /* reel_strip still moves vertically */
 .reel_strip {
@@ -107,14 +126,6 @@
 
 .symbol.blank {
     background: transparent;
-}
-.symbol {
-    width: 100%;
-    height: 100px;
-    object-fit: contain;
-    transition: all 0.1s ease;
-    border-radius: 10px;
-    position: relative;
 }
 
 
@@ -162,31 +173,37 @@
     font-weight: bold;
     text-align: center;
     margin: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100px;
 }
 
 .info_box h1 {
-    font-size: 0.6rem;
+    font-size: 1.4rem;
     margin-bottom: 5px;
 }
-.larger > div {
-    width: 150px !important;
+.info_box.larger {
+    width: 300px !important;
+    text-align: right;
 }
 .info_box div {
-    font-size: 1.1rem;
+    font-size: 2rem;
     border: 1px solid white;
     border-radius: 5px;
     padding: 10px;
     color: red;
-    width: 30px;
+    width: 100%;
 }
 
 .spin_button {
     text-align: center;
-    border: 1px solid red;
+    border: 2px solid red;
     border-radius: 5px;
     color: white;
     padding: 10px 20px;
     cursor: pointer;
+    margin: 0 20px;
     -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
     -khtml-user-select: none; /* Konqueror HTML */
@@ -199,12 +216,12 @@
     transform: scale(1.05);
 }
 .spin_button h1 {
-    font-size: 0.6rem;
+    font-size: 1.2rem;
     letter-spacing: -1px;
 }
 .spin_button h2 {
     margin-top: 8px;
-    font-size: 1.3rem;
+    font-size: 2.5rem;
 }
 
 .pay_lines {
@@ -215,6 +232,9 @@
     margin-right: 10px;
     padding: 8px 0 8px 0;
     box-sizing: border-box;
+    position: absolute;
+    left: -75px;
+    z-index: 10;
 }
 
 .pay_line:nth-child(even) {
@@ -222,9 +242,9 @@
 }
 
 .pay_line section {
-    width: 30px;
+    width: 60px;
+    height: 40px;
     display: flex;
-    /*margin-bottom: 10px;*/
     justify-content: center;
     align-items: center;
 }
@@ -237,13 +257,18 @@
     height: 100%;
     background-color: red;
     padding: 2px;
+    width: 100%;
+    font-size: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .pay_line div {
     width: 0;
     height: 0;
-    border-top: 10px solid transparent;
-    border-bottom: 10px solid transparent;
+    border-top: 20px solid transparent;
+    border-bottom: 20px solid transparent;
 
     transform: rotate(180deg);
 }

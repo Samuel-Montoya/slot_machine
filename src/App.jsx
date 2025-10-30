@@ -12,7 +12,8 @@ import spinReels from "./helpers/spin.js"
 import { reel1 as reelStrip1, reel2 as reelStrip2, reel3 as reelStrip3 } from "./helpers/reels.js"
 import { randomizeSpinSound, sound } from "./helpers/soundController.js"
 
-const SYMBOL_HEIGHT = 100
+const BLANK_HEIGHT = 150
+const SYMBOL_HEIGHT = 250
 const VISIBLE_COUNT = 3
 const BASE_SPIN_SPEED = 7000 // px/sec
 
@@ -27,6 +28,7 @@ export default function App() {
   const currentOutcomeRef = useRef(null)
   const rafRefs = useRef([null, null, null])
   const stopTimeouts = useRef([])
+  const functionRef = useRef(null)
 
   /** --- Cleanup --- */
   useEffect(() => {
@@ -68,9 +70,10 @@ export default function App() {
 
   const spinReel = useCallback((el, reelLength, _, __, extraLoops = 0) => {
     if (!el) return
-    const reelDistance = reelLength * SYMBOL_HEIGHT
-    const totalDistance = reelDistance * (3 + extraLoops)
-    const duration = (totalDistance / BASE_SPIN_SPEED) * 1000
+    // Each reel has 24 blanks (150px) + 25 symbols (250px)
+    const reelDistance = reelLength * ((25 * BLANK_HEIGHT) + (25 * 250));
+    const totalDistance = reelDistance * (3 + extraLoops);
+    const duration = (totalDistance / BASE_SPIN_SPEED) * 1000;
 
     el.style.transition = "none"
     el.style.transform = "translateY(0)"
@@ -80,13 +83,24 @@ export default function App() {
   }, [])
 
   const forceStopToResult = useCallback((index, reelArray) => {
-    const el = reelRefs[index].current
-    if (!el || !reelArray) return
-    if (rafRefs.current[index]) cancelAnimationFrame(rafRefs.current[index])
-    const stopOffset = Math.max(0, reelArray.length - VISIBLE_COUNT) * SYMBOL_HEIGHT
-    el.style.transition = "none"
-    el.style.transform = `translateY(-${stopOffset}px)`
-  }, [])
+    const el = reelRefs[index].current;
+    if (!el || !reelArray) return;
+    if (rafRefs.current[index]) cancelAnimationFrame(rafRefs.current[index]);
+
+    // Count how many symbols are visible from the bottom
+    const visibleCount = VISIBLE_COUNT;
+
+    // Calculate the pixel offset for the stop position dynamically
+    let totalHeight = 0;
+    for (let i = 0; i < reelArray.length - visibleCount; i++) {
+      const symbol = reelArray[i];
+      const isBlank = symbol === "Blank";
+      totalHeight += isBlank ? BLANK_HEIGHT : SYMBOL_HEIGHT;
+    }
+
+    el.style.transition = "none";
+    el.style.transform = `translateY(-${totalHeight}px)`;
+  }, []);
 
   const stopReel = useCallback(
     (index, reelArray) => {
@@ -211,10 +225,13 @@ export default function App() {
     <div className="slot_wrapper">
       <div className="reels_wrapper animate__animated animate__zoomInDown animate__slow" style={{ marginTop: 20 }}>
         <Paylines paylines={paylines} spinning={spinning} />
-        <Reels reels={reels} reelRefs={reelRefs} showGreen={showGreen} spinning={spinning} />
+        <Reels reels={reels} reelRefs={reelRefs} showGreen={showGreen} spinning={spinning}  />
       </div>
-      <UI handleClick={handleClick} spinning={spinning} paylines={paylines} />
-      {bonus && <BonusGame />}
+      <UI handleClick={handleClick} spinning={spinning} paylines={paylines} registerFunction={(fn) => (functionRef.current = fn)} />
+      {bonus && <BonusGame onFinish={(wonCredits) => {
+        setBonus(false)
+        functionRef.current?.(wonCredits)
+      }} />}
     </div>
   )
 }

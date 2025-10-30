@@ -45,7 +45,7 @@ export default function Paylines({ spinning, paylines }) {
       removePaylineClassNames()
 
       positions.forEach(([reel, spot]) => {
-        const [symbol, lineTick] = [document.getElementById(`reel_${reel}_pos_${spot + 49}`), document.getElementById(`line_${line}`)]
+        const [symbol, lineTick] = [document.getElementById(`reel_${reel}_pos_${spot + 50}`), document.getElementById(`line_${line}`)]
         if (symbol) {
           symbol.classList.add("animate__animated", "animate__pulse", "animate__infinite")
           symbol.style.background = `radial-gradient(circle, ${colors[line]} 20%,transparent 50%)`
@@ -73,7 +73,7 @@ export default function Paylines({ spinning, paylines }) {
       {staticPaylines.map((lines, i) => (
         <div key={i} className="pay_line">
           {lines.map(({ line, text, color }) => (
-            <section key={line} id={`line_${line}`} className="pay_line_section">
+            <section key={line} id={`line_${line}`} className="pay_line_section" style={line === 2 || line === 1 || line === 3 ? {marginTop: 20, marginBottom: 20} : {}}>
               <h1 style={{ backgroundColor: color }}>{text}</h1>
               <div style={{ borderRight: `10px solid ${color}` }} />
             </section>

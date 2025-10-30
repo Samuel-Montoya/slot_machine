@@ -2,11 +2,11 @@ export default function generateWeightedIndex(reelStrip, rtpSetting = 1.0) {
   const weights = reelStrip.map((symbol) => {
     switch (symbol) {
       case "Blank":
-        return 5
+        return 3
       case "SingleBar":
-        return 2
+        return 3
       case "DoubleBar":
-        return 1.5
+        return 2
       case "TripleBar":
         return 1
       case "Cherry":

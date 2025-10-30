@@ -24,7 +24,7 @@ const Reel = React.forwardRef(({ reel, spinning, showGreen, reelIndex }, ref) =>
     <div className={`reel_container ${showGreen ? "green_background" : spinning ? "active" : ""}`}>
       <div className="reel_inner">
         <div ref={ref} className={`reel_strip ${spinning ? "spinning" : ""}`}>
-          {doubledReel.map((symbol, i) => (
+          {doubledReel.map((symbol, i) => symbol === 'Blank' ? <div id={`reel_${reelIndex}_pos_${i}`} style={{height: i === 50 || i === 52 ? 200 : 150, width: '100%', backgroundColor:'transparent'}} key={i}/> : (
             <img key={i} src={getImage(symbol)} className="symbol" alt={symbol} id={`reel_${reelIndex}_pos_${i}`} />
           ))}
         </div>
