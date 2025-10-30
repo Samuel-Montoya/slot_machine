@@ -152,3 +152,20 @@ export function randomizeSpinSound() {
     volume: 0.7
   })
 }
+
+export function fadeOutSound(soundName, duration = 2000, interval = 50) {
+  const s = sound(soundName)
+  const startVolume = s.volume()
+  const steps = duration / interval
+  const volumeStep = startVolume / steps
+
+  const fade = setInterval(() => {
+    const newVol = Math.max(0, s.volume() - volumeStep)
+    s.volume(newVol)
+
+    if (newVol <= 0) {
+      s.volume(0)
+      clearInterval(fade)
+    }
+  }, interval)
+}

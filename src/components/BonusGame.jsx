@@ -2,7 +2,9 @@ import "../Bonus.css"
 import { useEffect, useState } from "react"
 import Cash from "../assets/cash.png"
 import shuffleArray from "../helpers/array.js"
-import { sound } from "../helpers/soundController.js"
+import { fadeOutSound, sound } from "../helpers/soundController.js"
+import Logo from "../assets/logo.png"
+import { runBonus } from "../helpers/bonus/offers.js"
 
 const colors = {
   10: "hotpink",
@@ -21,6 +23,36 @@ const allMoney = ["left-10", "left-15", "left-20", "middle-1000", "middle-200", 
 
 export default function BonusGame() {
   const [moneyToHighlight, setMoneyToHighlight] = useState([])
+  const [round, setRound] = useState(null)
+  const [total, setTotal] = useState(0)
+  const offers = runBonus()
+  // console.log(offers)
+
+  useEffect(() => {
+    if (round === null || !offers?.[round]) return
+
+    let isCancelled = false
+    let total = 0
+
+    const revealPicks = async () => {
+      const picks = offers[round].picks.map((p) => p.id)
+      for (let i = 0; i < picks.length; i++) {
+        if (isCancelled) break
+        total += offers[round].picks[i].value
+        setTotal(total)
+        setMoneyToHighlight(picks.slice(0, i + 1))
+        await new Promise((res) => setTimeout(res, 1000))
+      }
+    }
+
+    // Run once when `round` changes
+    revealPicks()
+
+    return () => {
+      isCancelled = true
+    }
+    // only rerun when round changes (NOT when offers re-renders)
+  }, [round])
 
   const initialLoad = async () => {
     await waitASec(500)
@@ -32,27 +64,53 @@ export default function BonusGame() {
     const steps = [step1, step2, step3, allMoney]
 
     for (let i = 0; i < steps.length; i++) {
-      await waitASec(i === 0 ? 3000 : 800)
+      await waitASec(i === 0 ? 4000 : 1000)
       setMoneyToHighlight(steps[i])
     }
+    await waitASec(3000)
+    void startGame()
   }
 
   useEffect(() => {
     void initialLoad()
   }, [])
 
-  const startGame = () => {
-    sound("bonus_music").volume(0.1)
-    setInterval(() => {
-      const shuffledMoney = shuffleArray(allMoney)
-      setMoneyToHighlight(shuffledMoney.slice(0, 3))
-    }, 400)
+  const startGame = async () => {
+    // fadeOutSound("bonus_music", 1000)
+    // clearMoneyHighlight()
+    // await waitASec(2000)
+    // await randomOffers()
+    clearMoneyHighlight()
+    // await waitASec(2000)
+    setRound(0)
   }
+
+  const tryAgain = async () => {
+    clearMoneyHighlight()
+    setTotal(0)
+    await waitASec(2000)
+    setRound(round + 1)
+  }
+
+  const randomOffers = () => {
+    return new Promise((resolve) => {
+      const interval = setInterval(() => {
+        const shuffledMoney = shuffleArray(allMoney)
+        setMoneyToHighlight(shuffledMoney.slice(0, 3))
+      }, 300)
+      setTimeout(() => {
+        clearInterval(interval)
+        resolve()
+      }, 3000)
+    })
+  }
+
+  const clearMoneyHighlight = () => setMoneyToHighlight([])
 
   return (
     <div className="bonus_game_wrapper animate__animated animate__fadeInDown">
       <div className="bonus_game_container">
-        <h1>MONEY MAKER</h1>
+        <img src={Logo} alt="logo" className="bonus_game_logo" />
 
         <section className="bonus_game_content">
           <div className="bonus_game-multipliers">
@@ -82,12 +140,31 @@ export default function BonusGame() {
               <Money amount={20} moneyToHighlight={moneyToHighlight} id="right-20" />
             </section>
           </div>
+        </section>
 
-          <section className="bonus_game-buttons">
-            <button onClick={startGame}>START</button>
-            <button>TAKE OFFER</button>
-            <button>TRY AGAIN</button>
-          </section>
+        <section className="bonus_game-offer-container">
+          <div className="bonus_game-offer-amount">
+            <h2>CURRENT OFFER</h2>
+            <h1>{total ? `$${total}` : ""}</h1>
+          </div>
+          <div className="bonus_game-offer-buttons">
+            <section>
+              <button style={{ backgroundColor: "mediumseagreen" }}>TAKE OFFER</button>
+            </section>
+
+            <div>
+              <div>
+                <h1>{round + 1}</h1>
+                <h2> OF </h2>
+                <h1>4</h1>
+              </div>
+              <h1 className="gold-red-text">OFFER</h1>
+            </div>
+
+            <section onClick={tryAgain}>
+              <button style={{ backgroundColor: "indianred" }}>TRY AGAIN</button>
+            </section>
+          </div>
         </section>
       </div>
     </div>
@@ -95,9 +172,10 @@ export default function BonusGame() {
 }
 
 const Money = ({ amount, size = "small", moneyToHighlight, id }) => {
+  const selected = moneyToHighlight.includes(id)
   const color = colors[amount]
   return (
-    <div className={`bonus_game-money-item ${size}`} style={{filter: moneyToHighlight.includes(id) ? `drop-shadow(0 0 15px ${color})` : "inherit"}}>
+    <div className={`bonus_game-money-item ${size} ${selected ? "selected" : ""}`} style={{ filter: selected ? `drop-shadow(0 0 15px ${color})` : "inherit" }}>
       <h1 style={{ color }}>{amount}</h1>
       <img src={Cash} alt="alt" />
     </div>

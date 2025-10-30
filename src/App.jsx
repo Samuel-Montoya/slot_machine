@@ -21,7 +21,7 @@ export default function App() {
   const [reels, setReels] = useState([reelStrip1, reelStrip2, reelStrip3])
   const [paylines, setPaylines] = useState([])
   const [showGreen, setShowGreen] = useState(false)
-  const [bonus, setBonus] = useState(false)
+  const [bonus, setBonus] = useState(true)
 
   const reelRefs = [useRef(null), useRef(null), useRef(null)]
   const currentOutcomeRef = useRef(null)
