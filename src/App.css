@@ -3,6 +3,7 @@
     width: 100vw;
     height: 100vh;
     font-family: "Press Start 2P", system-ui;
+    /*font-family: 'Calculator', sans-serif;*/
     box-shadow: inset 0 0 100px rgba(255, 255, 255, 0.05);
 }
 
@@ -37,7 +38,7 @@
 /* glossy white reels with subtle glow */
 .reel_container {
     width: 320px;
-    height: 650px;
+    height: 750px;
     overflow: hidden;
     border-radius: 8px;
     position: relative;
@@ -73,6 +74,16 @@
             inset 0 0 100px mediumseagreen;
     animation: scale 1.8s;
 }
+
+.red_background {
+    box-shadow:
+            0 0 100px darkred,
+            inset 0 0 100px indianred,
+            inset 0 0 100px darkred;
+    animation: scale 1.8s;
+}
+
+
 @keyframes scale {
     0% { transform: scale(1);
     }
@@ -166,6 +177,7 @@
     justify-content: center;
     align-items: center;
     margin-top: 20px;
+    /*font-family: 'Calculator', sans-serif;*/
 }
 
 .info_box {

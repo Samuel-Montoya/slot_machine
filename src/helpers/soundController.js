@@ -16,11 +16,14 @@ import click from "../assets/sounds/click.mp3"
 import tone from "../assets/sounds/Vlcn_Bet_Tone.mp3"
 import anticipation from "../assets/sounds/anticipation.mp3"
 import bell from "../assets/sounds/jackpotBell.mp3"
-import bonusHit1 from '../assets/sounds/bonus_hit_1.mp3'
-import bonusHit2 from '../assets/sounds/bonus_hit_2.mp3'
-import bonusHit3 from '../assets/sounds/bonus_hit_3.mp3'
-import bonusHit4 from '../assets/sounds/bonus_hit_4.mp3'
-import drumRoll from '../assets/sounds/drum_roll.mp3'
+import bonusHit1 from "../assets/sounds/bonus_hit_1.mp3"
+import bonusHit2 from "../assets/sounds/bonus_hit_2.mp3"
+import bonusHit3 from "../assets/sounds/bonus_hit_3.mp3"
+import bonusHit4 from "../assets/sounds/bonus_hit_4.mp3"
+import drumRoll from "../assets/sounds/drum_roll.mp3"
+import voice1 from "../assets/sounds/voice_1.wav"
+import jackpot from "../assets/sounds/jackpot.mp3"
+import jackpotFinished from "../assets/sounds/jackpot_stop.mp3"
 
 import reelSpin1 from "../assets/sounds/Vlcn_ReelSpin_01.mp3"
 import reelSpin2 from "../assets/sounds/Vlcn_ReelSpin_02.mp3"
@@ -121,16 +124,19 @@ const soundInstances = {
   bonus3: new Howl({ src: [bonus3], loop: false }),
   tone: new Howl({ src: [tone], loop: false }),
   click: new Howl({ src: [click], loop: false }),
+  voice1: new Howl({ src: [voice1], loop: false, volume: 0.1 }),
   drumRoll: new Howl({ src: [drumRoll], loop: false, volume: 0.5 }),
-  bonusHit1: new Howl({ src: [bonusHit1], loop: false,volume: 0.5 }),
-  bonusHit2: new Howl({ src: [bonusHit2], loop: false,volume: 0.5 }),
-  bonusHit3: new Howl({ src: [bonusHit3], loop: false,volume: 0.5 }),
-  bonusHit4: new Howl({ src: [bonusHit4], loop: false,volume: 0.5 }),
+  bonusHit1: new Howl({ src: [bonusHit1], loop: false, volume: 0.5 }),
+  bonusHit2: new Howl({ src: [bonusHit2], loop: false, volume: 0.5 }),
+  bonusHit3: new Howl({ src: [bonusHit3], loop: false, volume: 0.5 }),
+  bonusHit4: new Howl({ src: [bonusHit4], loop: false, volume: 0.5 }),
   anticipation: new Howl({ src: [anticipation], loop: false }),
   counting: new Howl({ src: [counting], loop: true, volume: 0.9 }),
   bonus_music: new Howl({ src: [bonusMusic], loop: true, volume: 0.2 }),
   finished_counting: new Howl({ src: [finished_counting], loop: false, volume: 0.4 }),
-  bell: new Howl({ src: [bell], loop: false, volume: 0.4 })
+  bell: new Howl({ src: [bell], loop: false, volume: 0.4 }),
+  jackpot: new Howl({ src: [jackpot], loop: false }),
+  jackpotFinished: new Howl({ src: [jackpotFinished], loop: false })
 }
 
 // --- Main controller ---
@@ -164,20 +170,23 @@ export function randomizeSpinSound() {
 }
 
 export function fadeOutSound(soundName, duration = 2000, interval = 50) {
-  const s = sound(soundName)
-  const startVolume = s.volume()
-  const steps = duration / interval
-  const volumeStep = startVolume / steps
+  return new Promise((resolve) => {
+    const s = sound(soundName)
+    const startVolume = s.volume()
+    const steps = duration / interval
+    const volumeStep = startVolume / steps
 
-  const fade = setInterval(() => {
-    const newVol = Math.max(0, s.volume() - volumeStep)
-    s.volume(newVol)
+    const fade = setInterval(() => {
+      const newVol = Math.max(0, s.volume() - volumeStep)
+      s.volume(newVol)
 
-    if (newVol <= 0) {
-      s.volume(0)
-      clearInterval(fade)
-    }
-  }, interval)
+      if (newVol <= 0) {
+        s.volume(0)
+        clearInterval(fade)
+      }
+    }, interval)
+    setTimeout(resolve, duration)
+  })
 }
 
 export function fadeInSound(soundName, targetVolume = 1, duration = 2000, interval = 50) {

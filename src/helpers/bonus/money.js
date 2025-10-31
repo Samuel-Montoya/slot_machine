@@ -8,7 +8,7 @@ export default [
   { id: "middle-30", value: 30, weight: 5, type: "cash" },
   { id: "middle-50", value: 50, weight: 4, type: "cash" },
   { id: "middle-200", value: 200, weight: 1, type: "cash" },
-  { id: "middle-1000", value: 1000, weight: 0.5, type: "cash" },
+  { id: "middle-1000", value: 1000, weight: 0.2, type: "cash" },
 
   // Right side
   { id: "right-10", value: 10, weight: 10, type: "cash" },

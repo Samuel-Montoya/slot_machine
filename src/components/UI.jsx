@@ -8,9 +8,10 @@ const playStopSounds = () => {
 }
 
 const tickInterval = 85
-const fastInterval = 37.5
+const fastInterval = 35
+const jackpotInterval = 35
 
-export default function UI({ handleClick, spinning, registerFunction }) {
+export default function UI({ isButtonDisabled, handleClick, spinning, registerFunction }) {
   const [money, setMoney] = useState(100)
   const [wonCredits, setWonCredits] = useState(0)
   const [buttonLocked, setButtonLocked] = useState(false)
@@ -21,11 +22,13 @@ export default function UI({ handleClick, spinning, registerFunction }) {
   const moneyIntervalRef = useRef(null)
   const finalMoneyRef = useRef(money) // store the current total credits
 
-  const handleWinCountUp = (wonCredits) => {
+  const handleWinCountUp = (wonCredits, jackpot) => {
     // Store this for later if user skips it
     finalCreditsRef.current = wonCredits
 
-    sound("counting").play()
+    if (jackpot) sound("jackpot").play()
+    else sound("counting").play()
+
     let countingCredits = 0
 
     const clearTickInterval = () => {
@@ -40,6 +43,10 @@ export default function UI({ handleClick, spinning, registerFunction }) {
       if (countingCredits >= wonCredits) {
         playStopSounds()
         clearTickInterval()
+        if (jackpot) {
+          // sound("jackpot").stop()
+          sound("jackpotFinished").play()
+        }
         return setWonCredits(wonCredits)
       }
 
@@ -47,7 +54,7 @@ export default function UI({ handleClick, spinning, registerFunction }) {
       setWonCredits(countingCredits)
 
       // When passing 200, switch to slower interval
-      if (countingCredits === 200) {
+      if (countingCredits === 200 && !jackpot) {
         clearTickInterval()
         tickIntervalRef.current = setInterval(tick, fastInterval)
       }
@@ -55,10 +62,10 @@ export default function UI({ handleClick, spinning, registerFunction }) {
 
     // Start counting
     clearTickInterval()
-    tickIntervalRef.current = setInterval(tick, tickInterval)
+    tickIntervalRef.current = setInterval(tick, jackpot ? jackpotInterval : tickInterval)
   }
 
-  const handleMoneyCountUp = (wonCredits, prevMoney) => {
+  const handleMoneyCountUp = (wonCredits, prevMoney, jackpot) => {
     finalMoneyRef.current = wonCredits
 
     let countingCredits = prevMoney
@@ -81,7 +88,7 @@ export default function UI({ handleClick, spinning, registerFunction }) {
       setMoney(countingCredits)
 
       // Check if we crossed 200 and haven’t yet slowed down
-      if (countingCredits - prevMoney === 200) {
+      if (countingCredits - prevMoney === 200 && !jackpot) {
         clearMoneyInterval()
         moneyIntervalRef.current = setInterval(tick, fastInterval)
       }
@@ -89,12 +96,12 @@ export default function UI({ handleClick, spinning, registerFunction }) {
 
     // Start the initial interval
     clearMoneyInterval()
-    moneyIntervalRef.current = setInterval(tick, tickInterval)
+    moneyIntervalRef.current = setInterval(tick, jackpot ? jackpotInterval : tickInterval)
   }
 
   const onClick = () => {
     setButtonLocked(true)
-    if (buttonLocked) return
+    if (buttonLocked || isButtonDisabled) return
 
     // Check if the interval for counting won credits or money counter is running
     if (tickIntervalRef.current || moneyIntervalRef.current) {
@@ -115,17 +122,17 @@ export default function UI({ handleClick, spinning, registerFunction }) {
     const newMoney = money - 9
     if (!spinning) setMoney(newMoney)
 
-    handleClick().then((wonCredits) => {
+    handleClick().then(({ wonCredits, jackpot }) => {
       if (wonCredits) {
-        startCountUp(wonCredits)
+        startCountUp(wonCredits, jackpot)
       }
     })
   }
 
-  const startCountUp = (wonCredits) => {
-    handleWinCountUp(wonCredits)
+  const startCountUp = (wonCredits, jackpot) => {
+    handleWinCountUp(wonCredits, jackpot)
     const adjustedMoney = spinning ? money : money - 9
-    handleMoneyCountUp(adjustedMoney + wonCredits, money)
+    handleMoneyCountUp(adjustedMoney + wonCredits, adjustedMoney, jackpot)
   }
   registerFunction(startCountUp)
 
@@ -137,7 +144,7 @@ export default function UI({ handleClick, spinning, registerFunction }) {
     <div className="info_wrapper animate__animated animate__zoomInDown animate__slower">
       <section className="info_box">
         <h1>LINES</h1>
-        <div style={{width: 40}}>9</div>
+        <div style={{ width: 40 }}>9</div>
       </section>
 
       <section className="info_box larger">
@@ -157,7 +164,7 @@ export default function UI({ handleClick, spinning, registerFunction }) {
 
       <section className="info_box">
         <h1>BET</h1>
-        <div style={{width: 40}}>9</div>
+        <div style={{ width: 40 }}>9</div>
       </section>
     </div>
   )

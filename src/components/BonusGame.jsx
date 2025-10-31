@@ -1,10 +1,10 @@
 import "../Bonus.css"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Cash from "../assets/cash.png"
-import shuffleArray from "../helpers/array.js"
-import {fadeInSound, fadeOutSound, sound} from "../helpers/soundController.js"
 import Logo from "../assets/logo.png"
+import shuffleArray from "../helpers/array.js"
 import { runBonus } from "../helpers/bonus/offers.js"
+import { fadeInSound, fadeOutSound, sound } from "../helpers/soundController.js"
 
 const colors = {
   10: "hotpink",
@@ -21,30 +21,41 @@ const waitASec = (ms = 800) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const allMoney = ["left-10", "left-15", "left-20", "middle-1000", "middle-200", "middle-30", "middle-50", "right-10", "right-15", "right-20"]
 
-export default function BonusGame({onFinish}) {
+export default function BonusGame({ onFinish }) {
   const [moneyToHighlight, setMoneyToHighlight] = useState([])
   const [round, setRound] = useState(null)
   const [total, setTotal] = useState(0)
+  const [disabled, setDisabled] = useState(true)
   const [offers, _] = useState(runBonus())
 
+  const bestPlayRef = useRef(null)
+
   useEffect(() => {
-    if (round === null || !offers?.[round]) return
+    if (round === null || !offers?.[round] || round === 4) return
 
     let isCancelled = false
     let total = 0
     console.log(offers)
 
-
     const revealPicks = async () => {
+      clearMoneyHighlight()
+      await waitASec(3000)
       const picks = offers[round].picks.map((p) => p.id)
       for (let i = 0; i < picks.length; i++) {
         if (isCancelled) break
-        console.log('here',offers[round].picks[i], total)
-        if(offers[round].picks[i].type === 'cash') total += offers[round].picks[i].value
+        if (offers[round].picks[i].type === "cash") total += offers[round].picks[i].value
         else total *= offers[round].picks[i].value
         setTotal(total)
         setMoneyToHighlight(picks.slice(0, i + 1))
         sound(`bonusHit${i + 1}`).play()
+        if (i === picks.length - 1) {
+          setTimeout(() => setDisabled(false), 1000)
+          bestPlayRef.current = setTimeout(() => {
+            if (offers[round].advice === "TAKE OFFER") document.getElementById("take_offer_best_play").style.animation = "goUp 0.3s ease forwards"
+            else document.getElementById("try_again_best_play").style.animation = "goUp 0.3s ease forwards"
+          }, 4000)
+        }
+
         await new Promise((res) => setTimeout(res, 1000))
       }
     }
@@ -55,13 +66,15 @@ export default function BonusGame({onFinish}) {
     })
 
     return () => {
+      bestPlayRef.current && clearTimeout(bestPlayRef.current)
       isCancelled = true
     }
   }, [round])
 
   const initialLoad = async () => {
     await waitASec(500)
-    sound("bonus_music", {volume: 0.1}).play()
+    sound("bonus_music", { volume: 0.1 }).play()
+    sound("voice1").play()
 
     const step1 = ["left-20", "middle-30", "middle-50", "right-20"]
     const step2 = [...step1, "left-15", "middle-200", "right-15"]
@@ -69,11 +82,11 @@ export default function BonusGame({onFinish}) {
     const steps = [step1, step2, step3, allMoney]
 
     for (let i = 0; i < steps.length; i++) {
-      await waitASec(i === 0 ? 2000 : 1000)
+      await waitASec(i === 0 ? 2000 : 800)
       // sound(`bonusHit${i + 1}`).play()
       setMoneyToHighlight(steps[i])
     }
-    await waitASec(3000)
+    await waitASec(2000)
     void startGame()
   }
 
@@ -84,20 +97,20 @@ export default function BonusGame({onFinish}) {
   const startGame = async () => {
     clearMoneyHighlight()
     await waitASec(1000)
-    await randomOffers()
-    clearMoneyHighlight()
+    void randomOffers()
     fadeOutSound("bonus_music", 1000)
-    sound('drumRoll').play()
-    await waitASec(3000)
+    sound("drumRoll").play()
     setRound(0)
   }
 
   const tryAgain = async () => {
+    setDisabled(true)
+    document.getElementById("take_offer_best_play").style.animation = "goDown 0.3s ease forwards"
+    document.getElementById("try_again_best_play").style.animation = "goDown 0.3s ease forwards"
     fadeOutSound("bonus_music", 1000)
-    clearMoneyHighlight()
+    void randomOffers()
     setTotal(0)
-    sound('drumRoll').play()
-    await waitASec(3000)
+    sound("drumRoll").play()
     setRound(round + 1)
   }
 
@@ -117,12 +130,16 @@ export default function BonusGame({onFinish}) {
   const clearMoneyHighlight = () => setMoneyToHighlight([])
 
   const takeMoney = () => {
-    fadeOutSound("bonus_music", 1000)
-    onFinish(total)
+    const wrapper = document.getElementById("bonus_game_wrapper")
+    wrapper.classList.remove("animate__fadeInDown")
+    wrapper.classList.add("animate__fadeOut")
+    setTimeout(() => {
+      onFinish(total)
+    }, 1000)
   }
 
   return (
-    <div className="bonus_game_wrapper animate__animated animate__fadeInDown">
+    <div className="bonus_game_wrapper animate__animated animate__fadeInDown" id="bonus_game_wrapper">
       <div className="bonus_game_container">
         <img src={Logo} alt="logo" className="bonus_game_logo" />
 
@@ -156,14 +173,19 @@ export default function BonusGame({onFinish}) {
           </div>
         </section>
 
-        <section className="bonus_game-offer-container">
+        <section className="bonus_game-offer-container animate__animated animate__fadeInUp animate__delay-5s">
           <div className="bonus_game-offer-amount">
             <h2>CURRENT OFFER</h2>
             <h1>{total ? `$${total}` : ""}</h1>
           </div>
           <div className="bonus_game-offer-buttons">
             <section>
-              <button style={{ backgroundColor: "mediumseagreen" }} onClick={takeMoney}>TAKE OFFER</button>
+              <div className="best_play" id="take_offer_best_play">
+                <h1>BEST PLAY</h1>
+              </div>
+              <button style={{ backgroundColor: disabled ? "#123924" : "mediumseagreen" }} onClick={takeMoney} disabled={disabled}>
+                TAKE OFFER
+              </button>
             </section>
 
             <div>
@@ -176,7 +198,12 @@ export default function BonusGame({onFinish}) {
             </div>
 
             <section onClick={tryAgain}>
-              <button style={{ backgroundColor: "indianred" }}>TRY AGAIN</button>
+              <div className="best_play red" id="try_again_best_play">
+                <h1>BEST PLAY</h1>
+              </div>
+              <button style={{ backgroundColor: disabled || round === 3 ? "#713636" : "indianred" }} disabled={disabled || round === 3}>
+                TRY AGAIN
+              </button>
             </section>
           </div>
         </section>

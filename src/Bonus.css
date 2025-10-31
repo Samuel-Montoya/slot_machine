@@ -1,12 +1,12 @@
 .bonus_game_container {
     /*width: 60%;*/
     width: 900px;
-    height: 70%;
+    height: 90%;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: radial-gradient(circle at center, rgba(41, 4, 42, 0.95) 20%, rgba(60, 0, 120, 0.8) 60%, purple 100%);
+    background: radial-gradient(circle at center, rgba(41, 4, 42, 0.95) 20%, #26004bcc 60%, black 100%);
     border-radius: 20px;
     box-shadow: 0 0 30px rgba(128, 0, 255, 0.7);
     animation: pulseGlow 2.5s ease-in-out infinite;
@@ -26,6 +26,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
 }
 
 @keyframes pulseGlow {
@@ -89,7 +90,7 @@
 }
 
 .bonus_game-money-item.medium h1 {
-    font-size: 2.3rem;
+    font-size: 3.6rem;
 }
 
 .bonus_game-money-item.medium {
@@ -118,7 +119,7 @@
 }
 
 .bonus_game_content h1 {
-    font-size: 1.5rem;
+    font-size: 2.5rem;
     margin: 10px;
     -webkit-text-stroke: 1px white; /* width and color */
     text-stroke: 1px white; /* not supported in all browsers */
@@ -207,6 +208,44 @@
     padding: 20px;
     border-radius: 50px;
     width: 35%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.best_play {
+    position: absolute;
+    top: 20px;
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+    background-color: mediumseagreen;
+    border: 2px solid gold;
+    border-bottom: none;
+    padding: 0 10px;
+    animation: goDown 0.5s ease-in-out;
+}
+
+.best_play.red {
+    background-color: indianred;
+}
+
+@keyframes goUp {
+    0% {
+        top: 20px;
+    }
+    100% {
+        top: 2px;
+    }
+}
+
+@keyframes goDown {
+    0% {
+        top: 2px;
+    }
+    100% {
+        top: 20px;
+    }
 }
 
 .bonus_game-offer-buttons > div {
@@ -255,6 +294,8 @@
     border: 3px solid gold;
     -webkit-text-stroke: 1px #ecc700; /* width + gold color */
     text-stroke: 1px #ecc700; /* fallback */
+    z-index: 5;
+    transition: all 0.3s ease;
 }
 
 .gold-red-text {

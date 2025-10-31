@@ -75,7 +75,6 @@ export default function evaluateAllLines(window, shouldLog = false) {
     if (bonusTriggered) return false
     return r.win && r.credits > 0
   })
-
   if (isJackpot) totalCredits = paytable.find((p) => p.id === "three_wilds").credits
 
   if (shouldLog) {
@@ -91,6 +90,7 @@ export default function evaluateAllLines(window, shouldLog = false) {
     bonusTriggered,
     results,
     winningLines,
+    jackpot: isJackpot,
     hasWins: winningLines.length > 0,
     winningPositions: winningLines.flatMap((line) =>
       line.positions.map((pos) => ({

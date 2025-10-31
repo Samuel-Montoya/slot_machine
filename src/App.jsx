@@ -10,9 +10,9 @@ import UI from "./components/UI.jsx"
 import evaluateAllLines from "./helpers/evaluateAllLines.js"
 import spinReels from "./helpers/spin.js"
 import { reel1 as reelStrip1, reel2 as reelStrip2, reel3 as reelStrip3 } from "./helpers/reels.js"
-import { randomizeSpinSound, sound } from "./helpers/soundController.js"
+import { fadeOutSound, randomizeSpinSound, sound } from "./helpers/soundController.js"
 
-const BLANK_HEIGHT = 150
+const BLANK_HEIGHT = 250
 const SYMBOL_HEIGHT = 250
 const VISIBLE_COUNT = 3
 const BASE_SPIN_SPEED = 7000 // px/sec
@@ -22,7 +22,9 @@ export default function App() {
   const [reels, setReels] = useState([reelStrip1, reelStrip2, reelStrip3])
   const [paylines, setPaylines] = useState([])
   const [showGreen, setShowGreen] = useState(false)
+  const [showRed, setShowRed] = useState(false)
   const [bonus, setBonus] = useState(false)
+  const [disableButton, setDisableButton] = useState(false)
 
   const reelRefs = [useRef(null), useRef(null), useRef(null)]
   const currentOutcomeRef = useRef(null)
@@ -68,14 +70,14 @@ export default function App() {
     }
   }, [])
 
-  const spinReel = useCallback((el, reelLength, _, __, extraLoops = 0) => {
+  const spinReel = useCallback((el, reel, _, __, extraLoops = 0) => {
     if (!el) return
     // Each reel has 24 blanks (150px) + 25 symbols (250px)
-    const reelDistance = reelLength * ((25 * BLANK_HEIGHT) + (25 * 250));
-    const totalDistance = reelDistance * (3 + extraLoops);
-    const duration = (totalDistance / BASE_SPIN_SPEED) * 1000;
+    const reelDistance = reel.length * (reel.length * SYMBOL_HEIGHT)
+    const totalDistance = reelDistance * (3 + extraLoops)
+    const duration = (totalDistance / BASE_SPIN_SPEED) * 1000
 
-    el.style.transition = "none"
+    // el.style.transition = "all 0.2s ease-in"
     el.style.transform = "translateY(0)"
     void el.offsetHeight // reflow
     el.style.transition = `transform ${duration}ms linear`
@@ -83,24 +85,24 @@ export default function App() {
   }, [])
 
   const forceStopToResult = useCallback((index, reelArray) => {
-    const el = reelRefs[index].current;
-    if (!el || !reelArray) return;
-    if (rafRefs.current[index]) cancelAnimationFrame(rafRefs.current[index]);
+    const el = reelRefs[index].current
+    if (!el || !reelArray) return
+    if (rafRefs.current[index]) cancelAnimationFrame(rafRefs.current[index])
 
     // Count how many symbols are visible from the bottom
-    const visibleCount = VISIBLE_COUNT;
+    const visibleCount = VISIBLE_COUNT
 
     // Calculate the pixel offset for the stop position dynamically
-    let totalHeight = 0;
+    let totalHeight = 0
     for (let i = 0; i < reelArray.length - visibleCount; i++) {
-      const symbol = reelArray[i];
-      const isBlank = symbol === "Blank";
-      totalHeight += isBlank ? BLANK_HEIGHT : SYMBOL_HEIGHT;
+      const symbol = reelArray[i]
+      const isBlank = symbol === "Blank"
+      totalHeight += isBlank ? BLANK_HEIGHT : SYMBOL_HEIGHT
     }
 
-    el.style.transition = "none";
-    el.style.transform = `translateY(-${totalHeight}px)`;
-  }, []);
+    el.style.transition = "none"
+    el.style.transform = `translateY(-${totalHeight}px)`
+  }, [])
 
   const stopReel = useCallback(
     (index, reelArray) => {
@@ -116,6 +118,7 @@ export default function App() {
   const resetSpin = useCallback(() => {
     setPaylines([])
     setShowGreen(false)
+    setShowRed(false)
     sound("click").play()
     randomizeSpinSound()
     sound("spin").play()
@@ -126,6 +129,7 @@ export default function App() {
 
   /** --- Handle click / spin --- */
   const handleClick = useCallback(async () => {
+    if (disableButton) return
     return new Promise((resolve) => {
       const outcomeData = spinning ? currentOutcomeRef.current : spinReels()
       const final = evaluateAllLines(outcomeData.window, true)
@@ -150,8 +154,14 @@ export default function App() {
 
         const soundToPlay = outcomeData.window.reel3.includes("Bonus") ? "bonus3" : "hit3"
         sound(soundToPlay).play()
+        if (final.jackpot) {
+          setShowRed(true)
+          sound("bell").play()
+          sound("bonus3").play()
+        }
         if (final.bonusTriggered) {
           setShowGreen(true)
+          setDisableButton(true)
           sound("bell").play()
           setTimeout(() => setBonus(true), 2000)
         }
@@ -159,7 +169,7 @@ export default function App() {
         setReels(reels)
         for (let i = 0; i < 3; i++) forceStopToResult(i, reels[i])
         setSpinning(false)
-        return resolve(final.totalCredits)
+        return resolve({ wonCredits: final.totalCredits, jackpot: final.jackpot })
       }
 
       /** NORMAL SPIN */
@@ -168,10 +178,11 @@ export default function App() {
       setPaylines(final.winningLines)
       setReels(newReels)
 
-      const suspenseSpin = outcomeData.window.reel1.includes("Bonus") && outcomeData.window.reel2.includes("Bonus")
-      spinReel(reelRefs[0].current, newReels[0].length, 1000, 0)
-      spinReel(reelRefs[1].current, newReels[1].length, 1500, 1)
-      spinReel(reelRefs[2].current, newReels[2].length, 2000, 2, suspenseSpin ? 2 : 0)
+      const possibleJackpot = outcomeData.window.reel1.includes("Wild") && outcomeData.window.reel2.includes("Wild")
+      const suspenseSpin = (outcomeData.window.reel1.includes("Bonus") && outcomeData.window.reel2.includes("Bonus")) || possibleJackpot
+      spinReel(reelRefs[0].current, newReels[0], 1000, 0)
+      spinReel(reelRefs[1].current, newReels[1], 1500, 1)
+      spinReel(reelRefs[2].current, newReels[2], 2000, 2, suspenseSpin ? 2 : 0)
 
       const reel3StopTime = suspenseSpin ? 3000 : 1800
       const anticipation = sound("anticipation")
@@ -189,7 +200,8 @@ export default function App() {
 
         if (suspenseSpin) {
           anticipation.play()
-          setShowGreen(true)
+          if (possibleJackpot) setShowRed(true)
+          else setShowGreen(true)
         }
       }, 1300)
 
@@ -198,9 +210,15 @@ export default function App() {
         const s = outcomeData.window.reel3.includes("Bonus") ? "bonus3" : "hit3"
         sound(s).play()
 
+        if (final.jackpot) {
+          sound("bell").play()
+          sound("bonus3").play()
+          setShowRed(true)
+        }
         if (outcomeData.window.reel3.includes("Bonus")) {
-          if (final.bonusTriggered) sound("bell").play()
-          else setShowGreen(false)
+          if (final.bonusTriggered) {
+            sound("bell").play()
+          } else setShowGreen(false)
         } else setShowGreen(false)
 
         if (suspenseSpin) anticipation.stop()
@@ -210,28 +228,34 @@ export default function App() {
             if (final.bonusTriggered) setBonus(true)
             setSpinning(false)
             currentOutcomeRef.current = null
-            resolve(final.totalCredits)
+            resolve({ wonCredits: final.totalCredits, jackpot: final.jackpot })
           },
-          final.bonusTriggered ? 2000 : 200
+          final.bonusTriggered || final.jackpot ? 2000 : 200
         )
       }, reel3StopTime)
 
       stopTimeouts.current = [t0, t1, t2]
     })
-  }, [spinning, cancelAllRefs, clearScheduledStops, forceStopToResult, resetSpin, spinReel, stopReel])
+  }, [spinning, cancelAllRefs, clearScheduledStops, forceStopToResult, resetSpin, spinReel, stopReel, bonus])
 
   /** --- UI --- */
   return (
     <div className="slot_wrapper">
       <div className="reels_wrapper animate__animated animate__zoomInDown animate__slow" style={{ marginTop: 20 }}>
         <Paylines paylines={paylines} spinning={spinning} />
-        <Reels reels={reels} reelRefs={reelRefs} showGreen={showGreen} spinning={spinning}  />
+        <Reels reels={reels} reelRefs={reelRefs} showGreen={showGreen} showRed={showRed} spinning={spinning} />
       </div>
-      <UI handleClick={handleClick} spinning={spinning} paylines={paylines} registerFunction={(fn) => (functionRef.current = fn)} />
-      {bonus && <BonusGame onFinish={(wonCredits) => {
-        setBonus(false)
-        functionRef.current?.(wonCredits)
-      }} />}
+      <UI handleClick={handleClick} spinning={spinning} isButtonDisabled={disableButton} registerFunction={(fn) => (functionRef.current = fn)} />
+      {bonus && (
+        <BonusGame
+          onFinish={(wonCredits) => {
+            fadeOutSound("bonus_music").then(() => sound("bonus_music").stop())
+            setBonus(false)
+            setDisableButton(false)
+            functionRef.current?.(wonCredits)
+          }}
+        />
+      )}
     </div>
   )
 }
