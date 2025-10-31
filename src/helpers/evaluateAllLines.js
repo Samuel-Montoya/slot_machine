@@ -7,6 +7,37 @@ const paytable = paytableData.payouts
 
 export default function evaluateAllLines(window, shouldLog = false) {
   const lines = getLineSymbols(window)
+
+  // ===============================================
+  // MIGHT HIT: bonus or wild suspense detection
+  // ===============================================
+  let mightHit = null
+
+  // We check reel1 + reel2 for aligned symbols on any payline.
+  // If reels 1 and 2 align on a BONUS → suspense for BONUS
+  // If reels 1 and 2 align on a WILD  → suspense for WILD
+
+  for (let lineIndex = 0; lineIndex < paylines.length; lineIndex++) {
+    const positions = paylines[lineIndex] // [{reel,row}, {reel,row}, {reel,row}]
+    const [reelIndex1, rowIndex1] = positions[0]
+    const [reelIndex2, rowIndex2] = positions[1]
+
+    const sym1 = window[`reel${reelIndex1 + 1}`][rowIndex1]
+    const sym2 = window[`reel${reelIndex2 + 1}`][rowIndex2]
+
+    // ✅ Might hit BONUS next?
+    if (sym1 === "Bonus" && sym2 === "Bonus") {
+      mightHit = "bonus"
+      break
+    }
+
+    // ✅ Might hit THREE WILDS next?
+    if (sym1 === "Wild" && sym2 === "Wild") {
+      mightHit = "wild"
+      break
+    }
+  }
+
   const results = []
   let totalCredits = 0
   let bonusTriggered = false
@@ -83,12 +114,14 @@ export default function evaluateAllLines(window, shouldLog = false) {
       console.log(`Line ${r.line}: ${r.symbols.join(" | ")} → ${r.credits} credits (${r.id})`)
     })
     console.log(`Total Credits Won: ${totalCredits}`)
+    console.log("Suspense? ", mightHit)
   }
 
   return {
     totalCredits,
     bonusTriggered,
     results,
+    mightHit,
     winningLines,
     jackpot: isJackpot,
     hasWins: winningLines.length > 0,

@@ -1,9 +1,10 @@
 import "../Bonus.css"
 import { useEffect, useRef, useState } from "react"
 import Cash from "../assets/cash.png"
-import Logo from "../assets/logo.png"
+import Logo from "../assets/real_logo.png"
 import shuffleArray from "../helpers/array.js"
 import { runBonus } from "../helpers/bonus/offers.js"
+import getImage from "../helpers/images.js"
 import { fadeInSound, fadeOutSound, sound } from "../helpers/soundController.js"
 
 const colors = {
@@ -87,6 +88,7 @@ export default function BonusGame({ onFinish }) {
       setMoneyToHighlight(steps[i])
     }
     await waitASec(2000)
+    document.getElementById("bonus_game_container").classList.add("glow")
     void startGame()
   }
 
@@ -130,18 +132,23 @@ export default function BonusGame({ onFinish }) {
   const clearMoneyHighlight = () => setMoneyToHighlight([])
 
   const takeMoney = () => {
+    sound("click").play()
+    setDisabled(true)
     const wrapper = document.getElementById("bonus_game_wrapper")
+    const container = document.getElementById("bonus_game_container")
     wrapper.classList.remove("animate__fadeInDown")
-    wrapper.classList.add("animate__fadeOut")
+    container.classList.remove("glow", "animate__fadeInUp", "animate__delay-1s")
+    wrapper.classList.add("animate__fadeOut", "animate__slower")
+    container.classList.add("animate__fadeOutDown")
     setTimeout(() => {
       onFinish(total)
-    }, 1000)
+    }, 2000)
   }
 
   return (
-    <div className="bonus_game_wrapper animate__animated animate__fadeInDown" id="bonus_game_wrapper">
-      <div className="bonus_game_container">
-        <img src={Logo} alt="logo" className="bonus_game_logo" />
+    <div className="bonus_game_wrapper animate__animated animate__fadeIn" id="bonus_game_wrapper">
+      <div className="bonus_game_container animate__animated animate__fadeInUp animate__delay-1s" id="bonus_game_container">
+        <img src={Logo} alt="logo" className="bonus_game_logo animate__animated animate__pulse animate__infinite animate__slower" />
 
         <section className="bonus_game_content">
           <div className="bonus_game-multipliers">
@@ -183,7 +190,7 @@ export default function BonusGame({ onFinish }) {
               <div className="best_play" id="take_offer_best_play">
                 <h1>BEST PLAY</h1>
               </div>
-              <button style={{ backgroundColor: disabled ? "#123924" : "mediumseagreen" }} onClick={takeMoney} disabled={disabled}>
+              <button style={{ backgroundColor: "mediumseagreen", filter: disabled ? "brightness(30%)" : "brightness(100%)" }} onClick={takeMoney} disabled={disabled}>
                 TAKE OFFER
               </button>
             </section>
@@ -201,7 +208,7 @@ export default function BonusGame({ onFinish }) {
               <div className="best_play red" id="try_again_best_play">
                 <h1>BEST PLAY</h1>
               </div>
-              <button style={{ backgroundColor: disabled || round === 3 ? "#713636" : "indianred" }} disabled={disabled || round === 3}>
+              <button style={{ backgroundColor: "indianred", filter: disabled || round === 3 ? "brightness(30%)" : "brightness(100%)" }} disabled={disabled || round === 3}>
                 TRY AGAIN
               </button>
             </section>
@@ -216,9 +223,9 @@ const Money = ({ amount, size = "small", moneyToHighlight, id }) => {
   const selected = moneyToHighlight.includes(id)
   const color = colors[amount]
   return (
-    <div className={`bonus_game-money-item ${size} ${selected ? "selected" : ""}`} style={{ filter: selected ? `drop-shadow(0 0 15px ${color})` : "inherit" }}>
-      <h1 style={{ color }}>{amount}</h1>
-      <img src={Cash} alt="alt" />
+    <div className={`bonus_game-money-item ${size} ${selected ? "selected" : ""}`} style={{ margin: amount === 15 ? "30px 0" : amount === 200 ? "20px" : 0 }}>
+      {/*<h1 style={{ color }}>{amount}</h1>*/}
+      <img src={getImage(amount)} alt="alt" />
     </div>
   )
 }

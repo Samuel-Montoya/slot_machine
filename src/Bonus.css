@@ -7,11 +7,18 @@
     justify-content: center;
     align-items: center;
     background: radial-gradient(circle at center, rgba(41, 4, 42, 0.95) 20%, #26004bcc 60%, black 100%);
-    border-radius: 20px;
+    border-top-left-radius: 25%;
+    border-top-right-radius: 25%;
+    padding: 0 20px;
     box-shadow: 0 0 30px rgba(128, 0, 255, 0.7);
-    animation: pulseGlow 2.5s ease-in-out infinite;
     border: 4px solid goldenrod;
     position: relative;
+    border-bottom: none;
+    overflow: hidden;
+}
+
+.glow {
+    animation: pulseGlow 2.5s ease-in-out infinite;
 }
 
 .bonus_game_wrapper {
@@ -25,7 +32,7 @@
     font-family: "Gravitas One", serif;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-end;
     overflow: hidden;
 }
 
@@ -39,7 +46,7 @@
 }
 
 .bonus_game_logo {
-    width: 200px;
+    width: 400px;
     height: 150px;
     margin-bottom: 20px;
 }
@@ -66,23 +73,25 @@
 
 .bonus_game-money {
     display: flex;
+    width: 100%;
 }
 
 .bonus_game-money-item {
     position: relative;
     width: 200px;
-    height: 100px;
+    height: 120px;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 10px;
+    /*margin: 10px;*/
     transition: transform 0.3s ease;
+    filter: brightness(30%)
 }
 
 .bonus_game-money-item.larger {
     width: 330px;
     height: 170px;
-    margin: 15px;
+    /*margin: 15px;*/
 }
 
 .bonus_game-money-item.larger h1 {
@@ -96,7 +105,7 @@
 .bonus_game-money-item.medium {
     width: 280px;
     height: 140px;
-    margin: 5px;
+    /*margin: 5px;*/
 }
 
 .bonus_game-money-item img {
@@ -114,8 +123,24 @@
     z-index: 101;
 }
 
+.bonus_game-left {
+    width: 20%;
+    margin: 0 20px;
+}
+
+.bonus_game-middle {
+    width: 60%;
+}
+
+.bonus_game-right {
+    width: 20%;
+    margin: 0 20px;
+}
+
 .bonus_game-middle-bottom {
+    width: 100%;
     display: flex;
+    justify-content: space-between;
 }
 
 .bonus_game_content h1 {
@@ -314,4 +339,5 @@
 
 .selected {
     transform: scale(1.05);
+    filter: brightness(100%)
 }
