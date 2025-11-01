@@ -14,7 +14,7 @@ export default function generateWeightedIndex(reelStrip, rtpSetting = 1.0) {
       case "Seven":
         return 0.5
       case "Bonus":
-        return 504.9
+        return 4.9
       case "Wild":
         return 0.15
       default:
