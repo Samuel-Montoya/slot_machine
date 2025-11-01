@@ -37,6 +37,9 @@ export default function BonusGame({ onFinish }) {
     let isCancelled = false
     let total = 0
     console.log(offers)
+    if(round === 1) sound("secondOffer").play()
+    else if(round === 2) sound("thirdOffer").play()
+    if(round === 3) sound("finalOffer").play()
 
     const revealPicks = async () => {
       clearMoneyHighlight()
@@ -48,25 +51,32 @@ export default function BonusGame({ onFinish }) {
         else total *= offers[round].picks[i].value
         setTotal(total)
         setMoneyToHighlight(picks.slice(0, i + 1))
+        if(offers[round].picks[i].type === 'multiplier') {
+          // sound('multiplyHit').play()
+          sound('multiply').play()
+          document.getElementById('multiplier_' + offers[round].picks[i].id).style.filter = 'brightness(100%)'
+        }
         sound(`bonusHit${i + 1}`).play()
-        if (i === picks.length - 1) {
-          setTimeout(() => setDisabled(false), 1000)
+
+        if (i === picks.length - 2) {
           bestPlayRef.current = setTimeout(() => {
             if (offers[round].advice === "TAKE OFFER") document.getElementById("take_offer_best_play").style.animation = "goUp 0.3s ease forwards"
             else document.getElementById("try_again_best_play").style.animation = "goUp 0.3s ease forwards"
-          }, 4000)
+          }, 6000)
         }
 
         await new Promise((res) => setTimeout(res, 1000))
       }
     }
 
+
     // Run once when `round` changes
     revealPicks().then(() => {
-      fadeInSound("bonus_music", 0.1, 1000)
+      fadeInSound("bonus_music", 0.05, 2000).then(() => setDisabled(false))
     })
 
     return () => {
+      console.log('RAN')
       bestPlayRef.current && clearTimeout(bestPlayRef.current)
       isCancelled = true
     }
@@ -74,7 +84,7 @@ export default function BonusGame({ onFinish }) {
 
   const initialLoad = async () => {
     await waitASec(500)
-    sound("bonus_music", { volume: 0.1 }).play()
+    sound("bonus_music", { volume: 0.05 }).play()
     sound("voice1").play()
 
     const step1 = ["left-20", "middle-30", "middle-50", "right-20"]
@@ -84,7 +94,6 @@ export default function BonusGame({ onFinish }) {
 
     for (let i = 0; i < steps.length; i++) {
       await waitASec(i === 0 ? 2000 : 800)
-      // sound(`bonusHit${i + 1}`).play()
       setMoneyToHighlight(steps[i])
     }
     await waitASec(2000)
@@ -102,6 +111,7 @@ export default function BonusGame({ onFinish }) {
     void randomOffers()
     fadeOutSound("bonus_music", 1000)
     sound("drumRoll").play()
+    sound("firstOffer").play()
     setRound(0)
   }
 
@@ -125,24 +135,33 @@ export default function BonusGame({ onFinish }) {
       setTimeout(() => {
         clearInterval(interval)
         resolve()
-      }, 3000)
+      }, 2800)
     })
   }
 
-  const clearMoneyHighlight = () => setMoneyToHighlight([])
+  const clearMoneyHighlight = () => {
+    document.getElementById('multiplier_1').style.filter = 'brightness(30%)'
+    document.getElementById('multiplier_2').style.filter = 'brightness(30%)'
+    setMoneyToHighlight([])
+  }
 
   const takeMoney = () => {
     sound("click").play()
+    sound("winner").play()
+    fadeOutSound("bonus_music").then(() => sound("bonus_music").stop())
     setDisabled(true)
-    const wrapper = document.getElementById("bonus_game_wrapper")
-    const container = document.getElementById("bonus_game_container")
-    wrapper.classList.remove("animate__fadeInDown")
-    container.classList.remove("glow", "animate__fadeInUp", "animate__delay-1s")
-    wrapper.classList.add("animate__fadeOut", "animate__slower")
-    container.classList.add("animate__fadeOutDown")
+    setTimeout(() => {
+      const wrapper = document.getElementById("bonus_game_wrapper")
+      const container = document.getElementById("bonus_game_container")
+      wrapper.classList.remove("animate__fadeInDown")
+      container.classList.remove("glow", "animate__fadeInUp", "animate__delay-1s")
+      wrapper.classList.add("animate__fadeOut", "animate__slower")
+      container.classList.add("animate__fadeOutDown")
+    }, 2000)
+
     setTimeout(() => {
       onFinish(total)
-    }, 2000)
+    }, 4000)
   }
 
   return (
@@ -152,8 +171,8 @@ export default function BonusGame({ onFinish }) {
 
         <section className="bonus_game_content">
           <div className="bonus_game-multipliers">
-            <h1>x2</h1>
-            <h1>x2</h1>
+            <h1 id="multiplier_1">x2</h1>
+            <h1 id="multiplier_2">x2</h1>
           </div>
 
           <div className="bonus_game-money">

@@ -15,6 +15,8 @@
     position: relative;
     border-bottom: none;
     overflow: hidden;
+    min-height: 920px;
+    max-height: 980px;
 }
 
 .glow {
@@ -57,11 +59,19 @@
     align-items: center;
     width: 100%;
     height: 100%;
+    position: relative;
 }
 
 .bonus_game-multipliers {
     display: flex;
     justify-content: space-between;
+    position: absolute;
+    top: 0;
+    width: 80%;
+}
+
+.bonus_game-multipliers h1 {
+    filter: brightness(30%);
 }
 
 .column {
@@ -74,6 +84,7 @@
 .bonus_game-money {
     display: flex;
     width: 100%;
+    margin-top: 40px;
 }
 
 .bonus_game-money-item {

@@ -24,6 +24,13 @@ import drumRoll from "../assets/sounds/drum_roll.mp3"
 import voice1 from "../assets/sounds/voice_1.wav"
 import jackpot from "../assets/sounds/jackpot.mp3"
 import jackpotFinished from "../assets/sounds/jackpot_stop.mp3"
+import firstOffer from '../assets/sounds/first_offer.mp3'
+import secondOffer from '../assets/sounds/second_offer.mp3'
+import thirdOffer from '../assets/sounds/third_offer.mp3'
+import finalOffer from '../assets/sounds/final_offer.mp3'
+import winner from '../assets/sounds/winner.mp3'
+import multiplyHit from '../assets/sounds/multiply_hit.mp3'
+import multiply from '../assets/sounds/multiply.mp3'
 
 import reelSpin1 from "../assets/sounds/Vlcn_ReelSpin_01.mp3"
 import reelSpin2 from "../assets/sounds/Vlcn_ReelSpin_02.mp3"
@@ -136,7 +143,14 @@ const soundInstances = {
   finished_counting: new Howl({ src: [finished_counting], loop: false, volume: 0.4 }),
   bell: new Howl({ src: [bell], loop: false, volume: 0.4 }),
   jackpot: new Howl({ src: [jackpot], loop: false }),
-  jackpotFinished: new Howl({ src: [jackpotFinished], loop: false })
+  jackpotFinished: new Howl({ src: [jackpotFinished], loop: false }),
+  firstOffer: new Howl({ src: [firstOffer], loop: false }),
+  secondOffer: new Howl({ src: [secondOffer], loop: false }),
+  thirdOffer: new Howl({ src: [thirdOffer], loop: false }),
+  finalOffer: new Howl({ src: [finalOffer], loop: false }),
+  winner: new Howl({ src: [winner], loop: false }),
+  multiplyHit: new Howl({ src: [multiplyHit], loop: false }),
+  multiply: new Howl({ src: [multiply], loop: false }),
 }
 
 // --- Main controller ---
@@ -190,18 +204,21 @@ export function fadeOutSound(soundName, duration = 2000, interval = 50) {
 }
 
 export function fadeInSound(soundName, targetVolume = 1, duration = 2000, interval = 50) {
-  const s = sound(soundName)
-  const startVolume = s.volume()
-  const steps = duration / interval
-  const volumeStep = (targetVolume - startVolume) / steps
+ return new Promise(resolve => {
+   const s = sound(soundName)
+   const startVolume = s.volume()
+   const steps = duration / interval
+   const volumeStep = (targetVolume - startVolume) / steps
 
-  const fade = setInterval(() => {
-    const newVol = Math.min(targetVolume, s.volume() + volumeStep)
-    s.volume(newVol)
+   const fade = setInterval(() => {
+     const newVol = Math.min(targetVolume, s.volume() + volumeStep)
+     s.volume(newVol)
 
-    if (newVol >= targetVolume) {
-      s.volume(targetVolume)
-      clearInterval(fade)
-    }
-  }, interval)
+     if (newVol >= targetVolume) {
+       s.volume(targetVolume)
+       clearInterval(fade)
+     }
+   }, interval)
+   setTimeout(resolve, duration)
+ })
 }

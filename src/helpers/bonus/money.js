@@ -16,6 +16,6 @@ export default [
   { id: "right-20", value: 20, weight: 8, type: "cash" },
 
   // Multipliers (rare)
-  { id: "x2-offer-1", value: 2, weight: 1, type: "multiplier" },
-  { id: "x2-offer-2", value: 2, weight: 1, type: "multiplier" }
+  { id: "1", value: 2, weight: 1, type: "multiplier" },
+  { id: "2", value: 2, weight: 4, type: "multiplier" }
 ]

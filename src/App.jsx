@@ -262,7 +262,6 @@ export default function App() {
       {bonus && (
         <BonusGame
           onFinish={(wonCredits) => {
-            fadeOutSound("bonus_music").then(() => sound("bonus_music").stop())
             setBonus(false)
             setDisableButton(false)
             functionRef.current?.(wonCredits)
